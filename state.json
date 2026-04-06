@@ -1,1 +1,12 @@
-
+{
+  "schemaVersion": 1,
+  "worldId": "survival-main",
+  "worldVersion": 0,
+  "worldChecksum": null,
+  "snapshotRef": null,
+  "snapshotSizeBytes": null,
+  "status": "Idle",
+  "host": null,
+  "lastUploadCompletedAtUtc": null,
+  "lastCompletedBy": null
+}
