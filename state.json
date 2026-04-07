@@ -1,14 +1,11 @@
 {
   "schemaVersion": 1,
   "worldId": "survival-main",
-  "worldVersion": 0,
-  "status": "Transferring",
-  "host": {
-    "clientId": "40c879973bd34ca5ae283e5e7b841155",
-    "displayName": "plane",
-    "leaseId": "81163a71-ec06-4dd2-aae8-c10d3daa4627",
-    "leaseExpiresAtUtc": "2026-04-07T06:45:06.5862828+00:00",
-    "lastHeartbeatUtc": "2026-04-07T06:44:21.5862826+00:00",
-    "hostEpoch": 1
-  }
+  "worldVersion": 1,
+  "worldChecksum": "0897A6801497DE10C94FDEAB7705001892A785B975982A8A74441DC997ACBEB3",
+  "snapshotRef": "snapshots/survival-main/world-v000001.zip",
+  "snapshotSizeBytes": 127,
+  "status": "Idle",
+  "lastUploadCompletedAtUtc": "2026-04-07T06:44:23.1785965+00:00",
+  "lastCompletedBy": "40c879973bd34ca5ae283e5e7b841155"
 }
