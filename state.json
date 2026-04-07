@@ -5,13 +5,13 @@
   "worldChecksum": "73B0FB680BD2F86128B49F3F17CC2ABDCCE0FB8AA42AF739BC77C2259C214849",
   "snapshotRef": "snapshots/survival-main/world-v000004.zip",
   "snapshotSizeBytes": 7589493,
-  "status": "Hosting",
+  "status": "Transferring",
   "host": {
     "clientId": "40c879973bd34ca5ae283e5e7b841155",
     "displayName": "plane",
     "leaseId": "9669557f-20c2-4272-b834-d0c311ce1b40",
-    "leaseExpiresAtUtc": "2026-04-07T07:10:50.5633869+00:00",
-    "lastHeartbeatUtc": "2026-04-07T07:10:05.5633868+00:00",
+    "leaseExpiresAtUtc": "2026-04-07T07:11:01.1088747+00:00",
+    "lastHeartbeatUtc": "2026-04-07T07:10:16.1088745+00:00",
     "hostEpoch": 1
   },
   "lastUploadCompletedAtUtc": "2026-04-07T07:03:16.7909509+00:00",
