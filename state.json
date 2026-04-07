@@ -10,8 +10,8 @@
     "clientId": "40c879973bd34ca5ae283e5e7b841155",
     "displayName": "plane",
     "leaseId": "f7243ea0-a614-45a8-8fb7-4e4702ec10b6",
-    "leaseExpiresAtUtc": "2026-04-07T20:39:45.7556437+00:00",
-    "lastHeartbeatUtc": "2026-04-07T20:39:00.7556437+00:00",
+    "leaseExpiresAtUtc": "2026-04-07T20:39:56.9369587+00:00",
+    "lastHeartbeatUtc": "2026-04-07T20:39:11.9369583+00:00",
     "hostEpoch": 2
   },
   "lastUploadCompletedAtUtc": "2026-04-07T20:35:06.275862+00:00",
