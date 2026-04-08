@@ -10,8 +10,8 @@
     "clientId": "40c879973bd34ca5ae283e5e7b841155",
     "displayName": "plane",
     "leaseId": "54b73bb6-e511-4151-9b9f-069496408789",
-    "leaseExpiresAtUtc": "2026-04-08T18:19:43.7467264+00:00",
-    "lastHeartbeatUtc": "2026-04-08T18:18:58.7467262+00:00",
+    "leaseExpiresAtUtc": "2026-04-08T18:19:44.933817+00:00",
+    "lastHeartbeatUtc": "2026-04-08T18:18:59.9338168+00:00",
     "tunnelAddress": "sign-reliable.gl.joinmc.link",
     "hostEpoch": 1
   },
