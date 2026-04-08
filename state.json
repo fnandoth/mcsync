@@ -2,14 +2,13 @@
   "schemaVersion": 1,
   "worldId": "survival-main",
   "worldVersion": 0,
-  "status": "Transferring",
+  "status": "Hosting",
   "host": {
     "clientId": "40c879973bd34ca5ae283e5e7b841155",
     "displayName": "plane",
-    "leaseId": "554ae287-ca69-4973-8c43-d1059ff42994",
-    "leaseExpiresAtUtc": "2026-04-08T18:21:16.1086549+00:00",
-    "lastHeartbeatUtc": "2026-04-08T18:20:31.1086547+00:00",
-    "tunnelAddress": "sign-reliable.gl.joinmc.link",
-    "hostEpoch": 1
+    "leaseId": "61091ac4-1121-4c07-802a-c40c497b3a4f",
+    "leaseExpiresAtUtc": "2026-04-08T18:22:38.1012377+00:00",
+    "lastHeartbeatUtc": "2026-04-08T18:21:53.1012377+00:00",
+    "hostEpoch": 2
   }
 }
