@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "worldId": "survival-main",
+  "worldVersion": 0,
+  "status": "Hosting",
+  "host": {
+    "clientId": "40c879973bd34ca5ae283e5e7b841155",
+    "displayName": "plane",
+    "leaseId": "554ae287-ca69-4973-8c43-d1059ff42994",
+    "leaseExpiresAtUtc": "2026-04-08T18:20:53.9589331+00:00",
+    "lastHeartbeatUtc": "2026-04-08T18:20:08.9589331+00:00",
+    "hostEpoch": 1
+  }
+}
