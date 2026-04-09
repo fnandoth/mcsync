@@ -7,8 +7,8 @@
     "clientId": "574a78d244894883a530fee1fef512dc",
     "displayName": "usuario",
     "leaseId": "42364de5-35ea-4928-8bb6-f95f8044d2fd",
-    "leaseExpiresAtUtc": "2026-04-09T22:36:28.9877868+00:00",
-    "lastHeartbeatUtc": "2026-04-09T22:35:43.9877865+00:00",
+    "leaseExpiresAtUtc": "2026-04-09T22:36:39.8355772+00:00",
+    "lastHeartbeatUtc": "2026-04-09T22:35:54.835577+00:00",
     "tunnelAddress": "downloads-rh.gl.joinmc.link",
     "hostEpoch": 1
   }
