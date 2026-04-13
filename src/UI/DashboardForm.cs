@@ -4,15 +4,6 @@ namespace MCSync.UI;
 
 public sealed class DashboardForm : Form
 {
-    private static readonly Color SurfaceColor = Color.FromArgb(14, 18, 24);
-    private static readonly Color CardColor = Color.FromArgb(24, 30, 39);
-    private static readonly Color InputColor = Color.FromArgb(31, 39, 50);
-    private static readonly Color TextColor = Color.FromArgb(236, 241, 248);
-    private static readonly Color MutedTextColor = Color.FromArgb(162, 174, 190);
-    private static readonly Color AccentColor = Color.FromArgb(90, 170, 255);
-    private static readonly Color DangerColor = Color.FromArgb(242, 112, 112);
-    private static readonly Color NeutralButtonColor = Color.FromArgb(38, 47, 60);
-
     private readonly SyncOrchestrator _orchestrator;
     private readonly ConfigStore _configStore;
     private readonly AppLogger _logger;
@@ -39,48 +30,48 @@ public sealed class DashboardForm : Form
         _logger = logger;
 
         Text = "MCSync";
-        Width = 980;
-        Height = 660;
-        MinimumSize = new Size(940, 600);
+        Width = 1020;
+        Height = 680;
+        MinimumSize = new Size(960, 620);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = SurfaceColor;
-        ForeColor = TextColor;
-        Font = new Font("Segoe UI", 9F);
+        NothingTheme.StyleForm(this);
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            Padding = new Padding(20, 18, 20, 18),
-            BackColor = SurfaceColor
+            Padding = new Padding(32),
+            BackColor = NothingTheme.Black
         };
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var header = CreateCardPanel();
-        header.Height = 94;
+        header.Height = 138;
 
+        var badge = NothingTheme.CreateMetaLabel("[ MCSYNC CONTROL ]", 24);
         var title = new Label
         {
-            Text = "Panel principal",
+            Text = "HOST SYNC",
             Dock = DockStyle.Top,
-            Height = 40,
-            Font = new Font("Segoe UI Semibold", 19F),
-            ForeColor = TextColor,
+            Height = 56,
+            Font = NothingTheme.Display(42F),
+            ForeColor = NothingTheme.TextDisplay,
             TextAlign = ContentAlignment.BottomLeft
         };
         var subtitle = new Label
         {
-            Text = "Inicia o detiene el host y revisa el estado del mundo en una sola vista.",
+            Text = "INICIA O DETIENE EL HOST Y REVISA EL ESTADO DEL MUNDO EN UNA SOLA VISTA.",
             Dock = DockStyle.Top,
             Height = 26,
-            Font = new Font("Segoe UI", 9.5F),
-            ForeColor = MutedTextColor,
+            Font = NothingTheme.Mono(9F),
+            ForeColor = NothingTheme.TextSecondary,
             TextAlign = ContentAlignment.BottomLeft
         };
         header.Controls.Add(subtitle);
         header.Controls.Add(title);
+        header.Controls.Add(badge);
         root.Controls.Add(header, 0, 0);
 
         var content = new TableLayoutPanel
@@ -89,63 +80,46 @@ public sealed class DashboardForm : Form
             ColumnCount = 2,
             RowCount = 1,
             Margin = new Padding(0),
-            BackColor = SurfaceColor
+            BackColor = NothingTheme.Black
         };
-        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
-        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
 
         var statusCard = CreateCardPanel();
         statusCard.Dock = DockStyle.Fill;
-        statusCard.Margin = new Padding(0, 12, 10, 0);
+        statusCard.Margin = new Padding(0, 16, 12, 0);
 
-        var statusTitle = new Label
-        {
-            Text = "Estado actual",
-            Dock = DockStyle.Top,
-            Height = 28,
-            Font = new Font("Segoe UI Semibold", 11.5F),
-            ForeColor = TextColor
-        };
+        var statusTitle = NothingTheme.CreateMetaLabel("Estado actual", 22);
         _statusValueLabel = new Label
         {
             Text = "IDLE",
             Dock = DockStyle.Top,
-            Height = 42,
-            Font = new Font("Segoe UI Semibold", 18F),
-            ForeColor = AccentColor
+            Height = 76,
+            Font = NothingTheme.Display(58F),
+            ForeColor = NothingTheme.TextDisplay
         };
         _statusDetailLabel = new Label
         {
             Text = "Listo",
             Dock = DockStyle.Top,
             Height = 30,
-            Font = new Font("Segoe UI", 9.5F),
-            ForeColor = TextColor
+            Font = NothingTheme.Ui(12F),
+            ForeColor = NothingTheme.TextPrimary
         };
-        _remoteStateLabel = CreateDetailLabel("Estado remoto: sin datos", TextColor);
-        _versionLabel = CreateDetailLabel("Version mundo: -", MutedTextColor);
-        _hostLabel = CreateDetailLabel("Host activo: -", MutedTextColor);
+        _remoteStateLabel = CreateDetailLabel("ESTADO REMOTO: SIN DATOS", NothingTheme.TextPrimary);
+        _versionLabel = CreateDetailLabel("VERSION MUNDO: -", NothingTheme.TextSecondary);
+        _hostLabel = CreateDetailLabel("HOST ACTIVO: -", NothingTheme.TextSecondary);
 
-        var addressTitle = new Label
-        {
-            Text = "IP publica",
-            Dock = DockStyle.Top,
-            Height = 24,
-            Font = new Font("Segoe UI Semibold", 9F),
-            ForeColor = MutedTextColor,
-            Padding = new Padding(0, 4, 0, 0)
-        };
+        var addressTitle = NothingTheme.CreateMetaLabel("IP publica", 22);
+        addressTitle.Padding = new Padding(0, 6, 0, 0);
         _addressTextBox = new TextBox
         {
             Dock = DockStyle.Top,
-            Height = 32,
+            Height = 38,
             ReadOnly = true,
-            BorderStyle = BorderStyle.FixedSingle,
-            BackColor = InputColor,
-            ForeColor = TextColor,
-            Font = new Font("Segoe UI", 10F),
             Text = "-"
         };
+        NothingTheme.StyleInput(_addressTextBox, useMono: true);
 
         statusCard.Controls.Add(_addressTextBox);
         statusCard.Controls.Add(addressTitle);
@@ -159,23 +133,16 @@ public sealed class DashboardForm : Form
 
         var actionsCard = CreateCardPanel();
         actionsCard.Dock = DockStyle.Fill;
-        actionsCard.Margin = new Padding(10, 12, 0, 0);
+        actionsCard.Margin = new Padding(12, 16, 0, 0);
 
-        var actionsTitle = new Label
-        {
-            Text = "Acciones",
-            Dock = DockStyle.Top,
-            Height = 28,
-            Font = new Font("Segoe UI Semibold", 11.5F),
-            ForeColor = TextColor
-        };
+        var actionsTitle = NothingTheme.CreateMetaLabel("Acciones", 24);
         var actionsSubtitle = new Label
         {
-            Text = "La accion principal cambia automaticamente segun el estado del host.",
+            Text = "LA ACCION PRINCIPAL CAMBIA SEGUN EL ESTADO DEL HOST.",
             Dock = DockStyle.Top,
-            Height = 40,
-            Font = new Font("Segoe UI", 9F),
-            ForeColor = MutedTextColor
+            Height = 30,
+            Font = NothingTheme.Mono(9F),
+            ForeColor = NothingTheme.TextSecondary
         };
 
         var actionsTable = new TableLayoutPanel
@@ -185,8 +152,8 @@ public sealed class DashboardForm : Form
             RowCount = 5,
             AutoSize = true,
             Margin = new Padding(0),
-            Padding = new Padding(0, 6, 0, 0),
-            BackColor = CardColor
+            Padding = new Padding(0, 10, 0, 0),
+            BackColor = NothingTheme.Surface
         };
         actionsTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         for (var i = 0; i < 5; i++)
@@ -194,11 +161,11 @@ public sealed class DashboardForm : Form
             actionsTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
 
-        _hostActionButton = CreateActionButton("Iniciar host", AccentColor);
-        _copyAddressButton = CreateActionButton("Copiar IP", NeutralButtonColor);
-        _refreshButton = CreateActionButton("Actualizar estado", NeutralButtonColor);
-        _settingsButton = CreateActionButton("Configuracion", NeutralButtonColor);
-        _logsButton = CreateActionButton("Ver logs", NeutralButtonColor);
+        _hostActionButton = CreateActionButton("Iniciar host", NothingButtonVariant.Primary);
+        _copyAddressButton = CreateActionButton("Copiar IP", NothingButtonVariant.Secondary);
+        _refreshButton = CreateActionButton("Actualizar estado", NothingButtonVariant.Secondary);
+        _settingsButton = CreateActionButton("Configuracion", NothingButtonVariant.Secondary);
+        _logsButton = CreateActionButton("Ver logs", NothingButtonVariant.Ghost);
 
         _hostActionButton.Click += async (_, _) => await ToggleHostingAsync();
         _copyAddressButton.Click += async (_, _) => await CopyAddressAsync();
@@ -422,18 +389,19 @@ public sealed class DashboardForm : Form
         _statusValueLabel.Text = _orchestrator.Status.ToString().ToUpperInvariant();
         _statusValueLabel.ForeColor = _orchestrator.Status switch
         {
-            SyncLifecycleStatus.Hosting => AccentColor,
-            SyncLifecycleStatus.Error => DangerColor,
-            _ => TextColor
+            SyncLifecycleStatus.Hosting => NothingTheme.Success,
+            SyncLifecycleStatus.SyncingDown or SyncLifecycleStatus.SyncingUp => NothingTheme.Warning,
+            SyncLifecycleStatus.Error => NothingTheme.Accent,
+            _ => NothingTheme.TextDisplay
         };
 
         _statusDetailLabel.Text = _orchestrator.StatusMessage;
         _addressTextBox.Text = string.IsNullOrWhiteSpace(address) ? "-" : address;
         _remoteStateLabel.Text = hasActiveHost
-            ? $"Estado remoto: host activo ({remoteState?.Host?.DisplayName})"
-            : "Estado remoto: sin host activo";
-        _versionLabel.Text = $"Version mundo: {remoteState?.WorldVersion ?? 0}";
-        _hostLabel.Text = $"Host activo: {(string.IsNullOrWhiteSpace(address) ? "-" : address)}";
+            ? $"ESTADO REMOTO: HOST ACTIVO ({remoteState?.Host?.DisplayName?.ToUpperInvariant()})"
+            : "ESTADO REMOTO: SIN HOST ACTIVO";
+        _versionLabel.Text = $"VERSION MUNDO: {remoteState?.WorldVersion ?? 0}";
+        _hostLabel.Text = $"HOST ACTIVO: {(string.IsNullOrWhiteSpace(address) ? "-" : address)}";
 
         UpdateActionButtons();
     }
@@ -448,12 +416,12 @@ public sealed class DashboardForm : Form
         if (isHosting)
         {
             _hostActionButton.Text = "Detener host y sincronizar";
-            ApplyButtonStyle(_hostActionButton, DangerColor);
+            ApplyButtonStyle(_hostActionButton, NothingButtonVariant.Destructive);
         }
         else
         {
             _hostActionButton.Text = "Iniciar host";
-            ApplyButtonStyle(_hostActionButton, AccentColor);
+            ApplyButtonStyle(_hostActionButton, NothingButtonVariant.Primary);
         }
 
         _copyAddressButton.Enabled = interactive && !string.IsNullOrWhiteSpace(address);
@@ -468,47 +436,40 @@ public sealed class DashboardForm : Form
         {
             Text = text,
             Dock = DockStyle.Top,
-            Height = 26,
+            Height = 24,
             ForeColor = color,
-            Font = new Font("Segoe UI", 9.5F)
+            Font = NothingTheme.Mono(9F)
         };
     }
 
     private static Panel CreateCardPanel()
     {
-        return new Panel
+        var panel = new Panel
         {
             Dock = DockStyle.Top,
-            Padding = new Padding(16, 14, 16, 14),
-            Margin = new Padding(0),
-            BackColor = CardColor
+            Margin = new Padding(0)
         };
+        NothingTheme.StyleCard(panel, 18);
+        return panel;
     }
 
-    private static Button CreateActionButton(string text, Color backColor)
+    private static Button CreateActionButton(string text, NothingButtonVariant variant)
     {
         var button = new Button
         {
             Text = text,
             Dock = DockStyle.Top,
-            Height = 38,
-            Margin = new Padding(0, 0, 0, 8)
+            Height = 44,
+            Margin = new Padding(0, 0, 0, 10)
         };
 
-        ApplyButtonStyle(button, backColor);
+        ApplyButtonStyle(button, variant);
         return button;
     }
 
-    private static void ApplyButtonStyle(Button button, Color backColor)
+    private static void ApplyButtonStyle(Button button, NothingButtonVariant variant)
     {
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(backColor, 0.12f);
-        button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(backColor, 0.06f);
-        button.BackColor = backColor;
-        button.ForeColor = TextColor;
-        button.Font = new Font("Segoe UI Semibold", 9F);
-        button.Cursor = Cursors.Hand;
+        NothingTheme.StyleButton(button, variant);
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)

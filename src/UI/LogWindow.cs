@@ -4,11 +4,6 @@ namespace MCSync.UI;
 
 public sealed class LogWindow : Form
 {
-    private static readonly Color SurfaceColor = Color.FromArgb(14, 18, 24);
-    private static readonly Color CardColor = Color.FromArgb(24, 30, 39);
-    private static readonly Color TextColor = Color.FromArgb(236, 241, 248);
-    private static readonly Color MutedTextColor = Color.FromArgb(162, 174, 190);
-
     private readonly AppLogger _logger;
     private readonly RichTextBox _logTextBox;
     private readonly Button _copyButton;
@@ -21,17 +16,15 @@ public sealed class LogWindow : Form
         Width = 920;
         Height = 620;
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = SurfaceColor;
-        ForeColor = TextColor;
-        Font = new Font("Segoe UI", 9F);
+        NothingTheme.StyleForm(this);
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 1,
-            Padding = new Padding(16, 14, 16, 16),
-            BackColor = SurfaceColor
+            Padding = new Padding(24),
+            BackColor = NothingTheme.Black
         };
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
@@ -40,9 +33,10 @@ public sealed class LogWindow : Form
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 2,
-            BackColor = CardColor,
+            BackColor = NothingTheme.Surface,
             Padding = new Padding(14, 12, 14, 14)
         };
+        NothingTheme.StyleCard(card, 14);
         card.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         card.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
@@ -72,17 +66,17 @@ public sealed class LogWindow : Form
             Text = "Actividad del sistema",
             Dock = DockStyle.Fill,
             AutoSize = true,
-            Font = new Font("Segoe UI Semibold", 12.5F),
-            ForeColor = TextColor,
+            Font = NothingTheme.Display(30F),
+            ForeColor = NothingTheme.TextDisplay,
             TextAlign = ContentAlignment.BottomLeft
         };
         var subtitle = new Label
         {
-            Text = "Vista cronologica de eventos para diagnostico rapido.",
+            Text = "",
             Dock = DockStyle.Fill,
             AutoSize = true,
-            Font = new Font("Segoe UI", 9F),
-            ForeColor = MutedTextColor,
+            Font = NothingTheme.Mono(9F),
+            ForeColor = NothingTheme.TextSecondary,
             TextAlign = ContentAlignment.TopLeft
         };
 
@@ -93,10 +87,10 @@ public sealed class LogWindow : Form
         {
             Dock = DockStyle.Fill,
             ReadOnly = true,
-            Font = new Font("Consolas", 10),
-            BorderStyle = BorderStyle.None,
-            BackColor = Color.FromArgb(19, 24, 32),
-            ForeColor = Color.Gainsboro
+            Font = NothingTheme.Mono(10F),
+            BorderStyle = BorderStyle.FixedSingle,
+            BackColor = NothingTheme.Black,
+            ForeColor = NothingTheme.TextPrimary
         };
 
         var actions = new FlowLayoutPanel
@@ -115,7 +109,7 @@ public sealed class LogWindow : Form
             Height = 32,
             Margin = new Padding(8, 0, 0, 0)
         };
-        StyleButton(_copyButton, Color.FromArgb(90, 170, 255));
+        StyleButton(_copyButton, NothingButtonVariant.Secondary);
         _copyButton.Click += (_, _) => Clipboard.SetText(_logTextBox.Text);
 
         _clearButton = new Button
@@ -125,7 +119,7 @@ public sealed class LogWindow : Form
             Height = 32,
             Margin = new Padding(8, 0, 0, 0)
         };
-        StyleButton(_clearButton, Color.FromArgb(38, 47, 60));
+        StyleButton(_clearButton, NothingButtonVariant.Ghost);
         _clearButton.Click += (_, _) => _logTextBox.Clear();
 
         actions.Controls.Add(_copyButton);
@@ -172,9 +166,9 @@ public sealed class LogWindow : Form
     {
         var levelColor = entry.Level switch
         {
-            "ERROR" => Color.FromArgb(255, 122, 122),
-            "WARN" => Color.FromArgb(255, 210, 122),
-            _ => Color.Gainsboro
+            "ERROR" => NothingTheme.Accent,
+            "WARN" => NothingTheme.Warning,
+            _ => NothingTheme.TextPrimary
         };
 
         _logTextBox.SelectionStart = _logTextBox.TextLength;
@@ -186,16 +180,9 @@ public sealed class LogWindow : Form
         _logTextBox.ScrollToCaret();
     }
 
-    private static void StyleButton(Button button, Color backColor)
+    private static void StyleButton(Button button, NothingButtonVariant variant)
     {
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(backColor, 0.12f);
-        button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(backColor, 0.06f);
-        button.BackColor = backColor;
-        button.ForeColor = TextColor;
-        button.Font = new Font("Segoe UI Semibold", 9F);
-        button.Cursor = Cursors.Hand;
+        NothingTheme.StyleButton(button, variant);
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)

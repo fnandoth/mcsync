@@ -39,15 +39,15 @@ public sealed class TrayIconController : IDisposable
         _uiInvoker = new Control();
         _ = _uiInvoker.Handle;
 
-        _statusItem = new ToolStripMenuItem("Estado: Listo") { Enabled = false };
-        _openDashboardItem = new ToolStripMenuItem("Abrir panel");
-        _startHostItem = new ToolStripMenuItem("Iniciar como host");
-        _stopHostItem = new ToolStripMenuItem("Detener host y subir mundo");
-        _copyAddressItem = new ToolStripMenuItem("Copiar IP actual");
-        _refreshStateItem = new ToolStripMenuItem("Actualizar estado");
-        _settingsItem = new ToolStripMenuItem("Configuracion");
-        _logsItem = new ToolStripMenuItem("Ver logs");
-        _exitItem = new ToolStripMenuItem("Salir");
+        _statusItem = new ToolStripMenuItem("ESTADO: LISTO") { Enabled = false };
+        _openDashboardItem = new ToolStripMenuItem("ABRIR PANEL");
+        _startHostItem = new ToolStripMenuItem("INICIAR COMO HOST");
+        _stopHostItem = new ToolStripMenuItem("DETENER HOST Y SUBIR MUNDO");
+        _copyAddressItem = new ToolStripMenuItem("COPIAR IP ACTUAL");
+        _refreshStateItem = new ToolStripMenuItem("ACTUALIZAR ESTADO");
+        _settingsItem = new ToolStripMenuItem("CONFIGURACION");
+        _logsItem = new ToolStripMenuItem("VER LOGS");
+        _exitItem = new ToolStripMenuItem("SALIR");
 
         _openDashboardItem.Click += (_, _) => _showDashboardAction();
         _startHostItem.Click += async (_, _) => await StartHostingAsync();
@@ -59,6 +59,11 @@ public sealed class TrayIconController : IDisposable
         _exitItem.Click += async (_, _) => await ExitAsync();
 
         _menu = new ContextMenuStrip();
+        _menu.BackColor = NothingTheme.Surface;
+        _menu.ForeColor = NothingTheme.TextPrimary;
+        _menu.Font = NothingTheme.Mono(9F);
+        _menu.Renderer = new ToolStripProfessionalRenderer(new NothingColorTable());
+        _menu.Opening += (_, _) => UpdateMenuState();
         _menu.Items.AddRange(
         [
             _statusItem,
@@ -256,7 +261,7 @@ public sealed class TrayIconController : IDisposable
     private void UpdateMenuState()
     {
         var activeAddress = _orchestrator.CurrentTunnelAddress ?? _orchestrator.LastKnownRemoteState?.Host?.TunnelAddress;
-        _statusItem.Text = $"Estado: {_orchestrator.Status} - {_orchestrator.StatusMessage}";
+        _statusItem.Text = $"ESTADO: {_orchestrator.Status.ToString().ToUpperInvariant()} - {_orchestrator.StatusMessage.ToUpperInvariant()}";
         _startHostItem.Enabled = !_orchestrator.IsHosting;
         _stopHostItem.Enabled = _orchestrator.IsHosting;
         _copyAddressItem.Enabled = !string.IsNullOrWhiteSpace(activeAddress);
@@ -277,5 +282,16 @@ public sealed class TrayIconController : IDisposable
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
         _uiInvoker.Dispose();
+    }
+
+    private sealed class NothingColorTable : ProfessionalColorTable
+    {
+        public override Color MenuBorder => NothingTheme.BorderVisible;
+        public override Color ToolStripDropDownBackground => NothingTheme.Surface;
+        public override Color ImageMarginGradientBegin => NothingTheme.Surface;
+        public override Color ImageMarginGradientMiddle => NothingTheme.Surface;
+        public override Color ImageMarginGradientEnd => NothingTheme.Surface;
+        public override Color MenuItemSelected => NothingTheme.SurfaceRaised;
+        public override Color MenuItemBorder => NothingTheme.BorderVisible;
     }
 }

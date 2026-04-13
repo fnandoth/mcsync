@@ -4,14 +4,6 @@ namespace MCSync.UI;
 
 public sealed class SetupForm : Form
 {
-    private static readonly Color SurfaceColor = Color.FromArgb(14, 18, 24);
-    private static readonly Color CardColor = Color.FromArgb(24, 30, 39);
-    private static readonly Color InputColor = Color.FromArgb(31, 39, 50);
-    private static readonly Color TextColor = Color.FromArgb(236, 241, 248);
-    private static readonly Color MutedTextColor = Color.FromArgb(162, 174, 190);
-    private static readonly Color AccentColor = Color.FromArgb(90, 170, 255);
-    private static readonly Color ButtonColor = Color.FromArgb(38, 47, 60);
-
     private readonly UserConfig _originalConfig;
     private readonly Dictionary<string, Control> _fields = new();
 
@@ -24,17 +16,15 @@ public sealed class SetupForm : Form
         Height = 610;
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(860, 560);
-        BackColor = SurfaceColor;
-        ForeColor = TextColor;
-        Font = new Font("Segoe UI", 9F);
+        NothingTheme.StyleForm(this);
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
-            Padding = new Padding(20, 18, 20, 18),
-            BackColor = SurfaceColor
+            Padding = new Padding(28, 24, 28, 24),
+            BackColor = NothingTheme.Black
         };
 
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -44,34 +34,37 @@ public sealed class SetupForm : Form
         var headerPanel = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 88,
-            Padding = new Padding(0, 0, 0, 12)
+            Height = 112,
+            Padding = new Padding(0, 0, 0, 14),
+            BackColor = NothingTheme.Black
         };
 
+        var eyebrowLabel = NothingTheme.CreateMetaLabel("[ SETUP ]", 22);
         var titleLabel = new Label
         {
-            Text = "Configuracion",
+            Text = "SYSTEM CONFIG",
             Dock = DockStyle.Top,
             AutoSize = false,
-            Height = 38,
-            Font = new Font("Segoe UI Semibold", 17F),
-            ForeColor = TextColor,
+            Height = 52,
+            Font = NothingTheme.Display(38F),
+            ForeColor = NothingTheme.TextDisplay,
             TextAlign = ContentAlignment.BottomLeft
         };
 
         var subtitleLabel = new Label
         {
-            Text = "Solo campos esenciales para sincronizar, hostear y recuperar estado remoto.",
+            Text = "SOLO CAMPOS ESENCIALES PARA SINCRONIZAR, HOSTEAR Y RECUPERAR ESTADO REMOTO.",
             Dock = DockStyle.Top,
             AutoSize = false,
             Height = 28,
-            Font = new Font("Segoe UI", 9.5F),
-            ForeColor = MutedTextColor,
+            Font = NothingTheme.Mono(9F),
+            ForeColor = NothingTheme.TextSecondary,
             TextAlign = ContentAlignment.BottomLeft
         };
 
         headerPanel.Controls.Add(subtitleLabel);
         headerPanel.Controls.Add(titleLabel);
+        headerPanel.Controls.Add(eyebrowLabel);
         root.Controls.Add(headerPanel, 0, 0);
 
         var scrollPanel = new Panel
@@ -79,7 +72,7 @@ public sealed class SetupForm : Form
             Dock = DockStyle.Fill,
             AutoScroll = true,
             Padding = new Padding(0, 0, 8, 0),
-            BackColor = SurfaceColor
+            BackColor = NothingTheme.Black
         };
 
         var table = new TableLayoutPanel
@@ -87,9 +80,10 @@ public sealed class SetupForm : Form
             Dock = DockStyle.Top,
             AutoSize = true,
             ColumnCount = 3,
-            BackColor = CardColor,
+            BackColor = NothingTheme.Surface,
             Padding = new Padding(18, 10, 18, 16)
         };
+        NothingTheme.StyleCard(table, 18);
 
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 188));
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -118,7 +112,7 @@ public sealed class SetupForm : Form
             FlowDirection = FlowDirection.RightToLeft,
             AutoSize = true,
             Padding = new Padding(0, 12, 0, 0),
-            BackColor = SurfaceColor
+            BackColor = NothingTheme.Black
         };
 
         var saveButton = new Button
@@ -128,7 +122,7 @@ public sealed class SetupForm : Form
             Width = 120,
             Height = 36
         };
-        StyleButton(saveButton, AccentColor, TextColor);
+        StyleButton(saveButton, NothingButtonVariant.Primary);
         saveButton.Click += OnSaveClicked;
 
         var cancelButton = new Button
@@ -139,7 +133,7 @@ public sealed class SetupForm : Form
             Height = 36,
             DialogResult = DialogResult.Cancel
         };
-        StyleButton(cancelButton, ButtonColor, TextColor);
+        StyleButton(cancelButton, NothingButtonVariant.Secondary);
 
         buttons.Controls.Add(saveButton);
         buttons.Controls.Add(cancelButton);
@@ -162,8 +156,8 @@ public sealed class SetupForm : Form
             Text = title.ToUpperInvariant(),
             Dock = DockStyle.Fill,
             AutoSize = true,
-            ForeColor = MutedTextColor,
-            Font = new Font("Segoe UI Semibold", 9F),
+            ForeColor = NothingTheme.TextSecondary,
+            Font = NothingTheme.Mono(9F),
             Padding = new Padding(0, 16, 0, 8),
             Margin = new Padding(0)
         };
@@ -202,7 +196,7 @@ public sealed class SetupForm : Form
             Height = 32,
             Margin = new Padding(8, 2, 0, 8)
         };
-        StyleButton(button, ButtonColor, TextColor);
+        StyleButton(button, NothingButtonVariant.Secondary);
 
         button.Click += (_, _) =>
         {
@@ -228,12 +222,12 @@ public sealed class SetupForm : Form
     {
         return new Label
         {
-            Text = text,
+            Text = text.ToUpperInvariant(),
             Dock = DockStyle.Fill,
             AutoSize = true,
             TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = TextColor,
-            Font = new Font("Segoe UI", 9.5F),
+            ForeColor = NothingTheme.TextSecondary,
+            Font = NothingTheme.Mono(9F),
             Padding = new Padding(0, 8, 0, 0),
             Margin = new Padding(0, 2, 8, 8)
         };
@@ -241,29 +235,20 @@ public sealed class SetupForm : Form
 
     private TextBox CreateFieldTextBox(string value, bool password)
     {
-        return new TextBox
+        var textBox = new TextBox
         {
             Text = value,
             Dock = DockStyle.Fill,
             UseSystemPasswordChar = password,
-            BorderStyle = BorderStyle.FixedSingle,
-            BackColor = InputColor,
-            ForeColor = TextColor,
-            Font = new Font("Segoe UI", 9.5F),
             Margin = new Padding(0, 2, 0, 8)
         };
+        NothingTheme.StyleInput(textBox, useMono: true);
+        return textBox;
     }
 
-    private static void StyleButton(Button button, Color backColor, Color foreColor)
+    private static void StyleButton(Button button, NothingButtonVariant variant)
     {
-        button.FlatStyle = FlatStyle.Flat;
-        button.FlatAppearance.BorderSize = 0;
-        button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(backColor, 0.12f);
-        button.FlatAppearance.MouseOverBackColor = ControlPaint.Light(backColor, 0.06f);
-        button.BackColor = backColor;
-        button.ForeColor = foreColor;
-        button.Font = new Font("Segoe UI Semibold", 9F);
-        button.Cursor = Cursors.Hand;
+        NothingTheme.StyleButton(button, variant);
     }
 
     private void OnSaveClicked(object? sender, EventArgs e)

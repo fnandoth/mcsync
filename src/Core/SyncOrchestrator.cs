@@ -171,6 +171,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         }
 
         _isStopping = true;
+        var stopCompleted = false;
 
         try
         {
@@ -197,13 +198,16 @@ public sealed class SyncOrchestrator : IAsyncDisposable
             LastKnownRemoteState = await _stateStore.PublishSnapshotAsync(_activeConfig, _activeLeaseId, upload, cancellationToken);
 
             await _worldManager.MarkLocalStateAsync(upload.WorldVersion, upload.Checksum, cancellationToken);
-
-            SetStatus(SyncLifecycleStatus.Idle, "Mundo sincronizado. Host liberado.");
-            _logger.Info("Host liberado y mundo sincronizado correctamente.");
+            stopCompleted = true;
         }
         finally
         {
             await ReleaseRuntimeStateAsync();
+            if (stopCompleted)
+            {
+                SetStatus(SyncLifecycleStatus.Idle, "Mundo sincronizado. Host liberado.");
+                _logger.Info("Host liberado y mundo sincronizado correctamente.");
+            }
             _isStopping = false;
         }
     }
