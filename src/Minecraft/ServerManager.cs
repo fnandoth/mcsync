@@ -32,7 +32,7 @@ public sealed class ServerManager : IDisposable
         {
             FileName = "java",
             Arguments = $"-Xmx{config.JavaMaxMemoryMb}M -Xms{config.JavaMinMemoryMb}M -jar server.jar nogui",
-            WorkingDirectory = config.ServerFolderPath,
+            WorkingDirectory = Path.GetDirectoryName(config.ServerJarPath),
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,

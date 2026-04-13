@@ -15,7 +15,6 @@ public sealed class UserConfig
     public string StateFilePath { get; set; } = "mcsync/state.json";
     public string SnapshotFolderPath { get; set; } = "mcsync/snapshots";
     public string WorldId { get; set; } = "survival-main";
-    public string ServerFolderPath { get; set; } = Path.Combine(AppPaths.AppDataDirectory, "ServerFolder");
     public string ServerJarPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "server.jar");
     public string JavaExecutablePath { get; set; } = "java";
     public string PlayitGGUrl { get; set; } = string.Empty;

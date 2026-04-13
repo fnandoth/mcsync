@@ -50,7 +50,6 @@ public sealed class SetupForm : Form
         AddTextRow(table, "GitHub branch", "GitHubBranch", _originalConfig.GitHubBranch);
         AddTextRow(table, "GitHub token", "GitHubToken", _originalConfig.GetGitHubToken(), password: true);
         AddFileRow(table, "Server jar", "ServerJarPath", _originalConfig.ServerJarPath, "JAR (*.jar)|*.jar|Todos (*.*)|*.*");
-        AddFolderRow(table, "Server folder", "ServerFolderPath", _originalConfig.ServerFolderPath);
         AddTextRow(table, "playit.gg URL", "PlayitGGUrl", _originalConfig.PlayitGGUrl);
         AddTextRow(table, "RAM minima MB", "JavaMinMemoryMb", _originalConfig.JavaMinMemoryMb.ToString());
         AddTextRow(table, "RAM maxima MB", "JavaMaxMemoryMb", _originalConfig.JavaMaxMemoryMb.ToString());
@@ -231,7 +230,6 @@ public sealed class SetupForm : Form
         config.SnapshotFolderPath = "snapshots"; //GetText("SnapshotFolderPath");
         config.WorldId = "survival-main";//GetText("WorldId");
         config.ServerJarPath = GetText("ServerJarPath");
-        config.ServerFolderPath = GetText("ServerFolderPath");
         config.PlayitGGUrl = GetText("PlayitGGUrl");
         config.JavaMinMemoryMb = minMb;
         config.JavaMaxMemoryMb = maxMb;

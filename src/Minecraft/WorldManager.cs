@@ -34,9 +34,10 @@ public sealed class WorldManager
     {
         await Task.Run(() =>
         {
-            Directory.CreateDirectory(config.ServerFolderPath);
+            var serverFolderPath = GetServerFolderPath(config);
+            Directory.CreateDirectory(serverFolderPath);
 
-            var targetJarPath = Path.Combine(config.ServerFolderPath, "server.jar");
+            var targetJarPath = Path.Combine(serverFolderPath, "server.jar");
             
             // Solo copiar si el servidor.jar no existe en la carpeta destino
             // o si es diferente del archivo fuente
@@ -47,7 +48,7 @@ public sealed class WorldManager
 
             if (config.AutoAcceptEula)
             {
-                var eulaPath = Path.Combine(config.ServerFolderPath, "eula.txt");
+                var eulaPath = Path.Combine(serverFolderPath, "eula.txt");
                 File.WriteAllText(eulaPath, "eula=true" + Environment.NewLine);
             }
         }, cancellationToken);
@@ -61,15 +62,16 @@ public sealed class WorldManager
 
         await Task.Run(() =>
         {
-            if (!Directory.Exists(config.ServerFolderPath))
+            var serverFolderPath = GetServerFolderPath(config);
+            if (!Directory.Exists(serverFolderPath))
             {
                 throw new DirectoryNotFoundException("La carpeta del servidor no existe.");
             }
 
             using var archive = ZipFile.Open(zipPath, ZipArchiveMode.Create);
-            foreach (var filePath in EnumerateFilesToArchive(config.ServerFolderPath))
+            foreach (var filePath in EnumerateFilesToArchive(serverFolderPath))
             {
-                var relativePath = Path.GetRelativePath(config.ServerFolderPath, filePath);
+                var relativePath = Path.GetRelativePath(serverFolderPath, filePath);
                 archive.CreateEntryFromFile(filePath, relativePath, CompressionLevel.SmallestSize);
             }
         }, cancellationToken);
@@ -85,9 +87,10 @@ public sealed class WorldManager
     {
         await Task.Run(() =>
         {
-            Directory.CreateDirectory(config.ServerFolderPath);
+            var serverFolderPath = GetServerFolderPath(config);
+            Directory.CreateDirectory(serverFolderPath);
 
-            foreach (var directory in Directory.GetDirectories(config.ServerFolderPath))
+            foreach (var directory in Directory.GetDirectories(serverFolderPath))
             {
                 // No eliminar la carpeta si es la misma que contiene el server.jar original
                 if (!DirectoryContainsFile(directory, config.ServerJarPath))
@@ -96,7 +99,7 @@ public sealed class WorldManager
                 }
             }
 
-            foreach (var file in Directory.GetFiles(config.ServerFolderPath))
+            foreach (var file in Directory.GetFiles(serverFolderPath))
             {
                 // No eliminar el server.jar si es el original
                 if (!IsFilePath(file, config.ServerJarPath))
@@ -105,8 +108,8 @@ public sealed class WorldManager
                 }
             }
 
-            ZipFile.ExtractToDirectory(zipPath, config.ServerFolderPath, true);
-            var targetJarPath = Path.Combine(config.ServerFolderPath, "server.jar");
+            ZipFile.ExtractToDirectory(zipPath, serverFolderPath, true);
+            var targetJarPath = Path.Combine(serverFolderPath, "server.jar");
             
             // Solo copiar si es necesario (el servidor.jar no está en la misma carpeta)
             if (!IsFilePath(targetJarPath, config.ServerJarPath))
@@ -117,7 +120,7 @@ public sealed class WorldManager
 
             if (config.AutoAcceptEula)
             {
-                var eulaPath = Path.Combine(config.ServerFolderPath, "eula.txt");
+                var eulaPath = Path.Combine(serverFolderPath, "eula.txt");
                 File.WriteAllText(eulaPath, "eula=true" + Environment.NewLine);
             }
         }, cancellationToken);
@@ -191,6 +194,19 @@ public sealed class WorldManager
         var fullDirPath = Path.GetFullPath(directory);
         var fullFilePath = Path.GetFullPath(filePath);
         return fullFilePath.StartsWith(fullDirPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetServerFolderPath(UserConfig config)
+    {
+        var fullJarPath = Path.GetFullPath(config.ServerJarPath);
+        var serverFolderPath = Path.GetDirectoryName(fullJarPath);
+
+        if (string.IsNullOrWhiteSpace(serverFolderPath))
+        {
+            throw new DirectoryNotFoundException("No se pudo determinar la carpeta del servidor desde ServerJarPath.");
+        }
+
+        return serverFolderPath;
     }
 
     private static void CopyFileWithRetry(string source, string destination, int maxRetries)
