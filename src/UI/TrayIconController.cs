@@ -8,9 +8,11 @@ public sealed class TrayIconController : IDisposable
     private readonly ConfigStore _configStore;
     private readonly AppLogger _logger;
     private readonly Action _exitAction;
+    private readonly Action _showDashboardAction;
     private readonly NotifyIcon _notifyIcon;
     private readonly ContextMenuStrip _menu;
     private readonly ToolStripMenuItem _statusItem;
+    private readonly ToolStripMenuItem _openDashboardItem;
     private readonly ToolStripMenuItem _startHostItem;
     private readonly ToolStripMenuItem _stopHostItem;
     private readonly ToolStripMenuItem _copyAddressItem;
@@ -22,16 +24,23 @@ public sealed class TrayIconController : IDisposable
 
     private LogWindow? _logWindow;
 
-    public TrayIconController(SyncOrchestrator orchestrator, ConfigStore configStore, AppLogger logger, Action exitAction)
+    public TrayIconController(
+        SyncOrchestrator orchestrator,
+        ConfigStore configStore,
+        AppLogger logger,
+        Action showDashboardAction,
+        Action exitAction)
     {
         _orchestrator = orchestrator;
         _configStore = configStore;
         _logger = logger;
+        _showDashboardAction = showDashboardAction;
         _exitAction = exitAction;
         _uiInvoker = new Control();
         _ = _uiInvoker.Handle;
 
         _statusItem = new ToolStripMenuItem("Estado: Listo") { Enabled = false };
+        _openDashboardItem = new ToolStripMenuItem("Abrir panel");
         _startHostItem = new ToolStripMenuItem("Iniciar como host");
         _stopHostItem = new ToolStripMenuItem("Detener host y subir mundo");
         _copyAddressItem = new ToolStripMenuItem("Copiar IP actual");
@@ -40,6 +49,7 @@ public sealed class TrayIconController : IDisposable
         _logsItem = new ToolStripMenuItem("Ver logs");
         _exitItem = new ToolStripMenuItem("Salir");
 
+        _openDashboardItem.Click += (_, _) => _showDashboardAction();
         _startHostItem.Click += async (_, _) => await StartHostingAsync();
         _stopHostItem.Click += async (_, _) => await StopHostingAsync();
         _copyAddressItem.Click += async (_, _) => await CopyAddressAsync();
@@ -52,6 +62,8 @@ public sealed class TrayIconController : IDisposable
         _menu.Items.AddRange(
         [
             _statusItem,
+            new ToolStripSeparator(),
+            _openDashboardItem,
             new ToolStripSeparator(),
             _startHostItem,
             _stopHostItem,
@@ -72,7 +84,7 @@ public sealed class TrayIconController : IDisposable
             ContextMenuStrip = _menu
         };
 
-        _notifyIcon.DoubleClick += (_, _) => ShowLogs();
+        _notifyIcon.DoubleClick += (_, _) => _showDashboardAction();
         _orchestrator.StatusChanged += OnStatusChanged;
         _ = CheckConfigurationOnStartupAsync();
         UpdateMenuState();
