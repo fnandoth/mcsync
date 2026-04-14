@@ -118,7 +118,6 @@ La app esta en **fase 1 (demo funcional)**: flujo end-to-end operable, UI para u
 
 ## Documentacion por modulo
 
-- `docs/architecture-mvp.md`: arquitectura objetivo del MVP.
 - `src/Core/README.md`: orquestacion, estados y consistencia.
 - `src/GitHub/README.md`: control plane y semantica de lease.
 - `src/Minecraft/README.md`: ciclo local de server y snapshot.

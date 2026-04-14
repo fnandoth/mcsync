@@ -118,7 +118,6 @@ The app is in **phase 1 (functional demo)**: end-to-end operable flow, UI for da
 
 ## Module Documentation
 
-- `docs/architecture-mvp.md`: target MVP architecture.
 - `src/Core/README.md`: orchestration, states, and consistency.
 - `src/GitHub/README.md`: control plane and lease semantics.
 - `src/Minecraft/README.md`: local server and snapshot lifecycle.
