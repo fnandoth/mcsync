@@ -42,7 +42,20 @@ public sealed class GitHubClient
     public async Task<GitHubFileResult<byte[]>?> GetBytesAsync(UserConfig config, string path, CancellationToken cancellationToken = default)
     {
         var file = await GetFileAsync(config, path, cancellationToken);
-        return file is null ? null : new GitHubFileResult<byte[]>(file.Sha, file.RawContent);
+        if (file is null)
+        {
+            return null;
+        }
+
+        // GitHub Contents API devuelve encoding=none para archivos grandes (>1MB) con media type JSON.
+        // En ese caso debemos pedir el contenido en crudo para evitar snapshots truncados/vacios.
+        if (string.Equals(file.Encoding, "none", StringComparison.OrdinalIgnoreCase))
+        {
+            var rawContent = await GetRawBytesAsync(config, path, cancellationToken);
+            return new GitHubFileResult<byte[]>(file.Sha, rawContent);
+        }
+
+        return new GitHubFileResult<byte[]>(file.Sha, file.RawContent);
     }
 
     public async Task<GitHubWriteResult> PutJsonAsync<T>(
@@ -115,8 +128,32 @@ public sealed class GitHubClient
             ?? throw new InvalidOperationException("Respuesta invalida de GitHub al leer contenido.");
 
         var normalized = (parsed.Content ?? string.Empty).Replace("\n", string.Empty).Replace("\r", string.Empty);
-        var bytes = Convert.FromBase64String(normalized);
-        return new GitHubRawFile(parsed.Sha, parsed.Path, bytes, Encoding.UTF8.GetString(bytes));
+        var bytes = string.Equals(parsed.Encoding, "base64", StringComparison.OrdinalIgnoreCase)
+            ? Convert.FromBase64String(normalized)
+            : Array.Empty<byte>();
+
+        return new GitHubRawFile(parsed.Sha, parsed.Path, parsed.Encoding ?? string.Empty, bytes, Encoding.UTF8.GetString(bytes));
+    }
+
+    private async Task<byte[]> GetRawBytesAsync(UserConfig config, string path, CancellationToken cancellationToken)
+    {
+        using var request = CreateRequest(HttpMethod.Get, BuildContentsUri(config, path), config.GetGitHubToken());
+        request.Headers.Accept.Clear();
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.raw"));
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new FileNotFoundException($"No se encontro el contenido remoto {path}.");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new InvalidOperationException($"GitHub respondio {(int)response.StatusCode} al leer contenido crudo de {path}: {body}");
+        }
+
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, Uri uri, string token)
@@ -144,13 +181,13 @@ public sealed class GitHubClient
         return new Uri($"https://api.github.com/repos/{owner}/{repo}/contents/{encodedPath}");
     }
 
-    private sealed record GitHubGetResponse(string Sha, string Path, string Content);
+    private sealed record GitHubGetResponse(string Sha, string Path, string Content, string? Encoding);
 
     private sealed record GitHubPutResponse(GitHubPutContent Content);
 
     private sealed record GitHubPutContent(string Sha, string Path);
 
-    private sealed record GitHubRawFile(string Sha, string Path, byte[] RawContent, string TextContent);
+    private sealed record GitHubRawFile(string Sha, string Path, string Encoding, byte[] RawContent, string TextContent);
 }
 
 public sealed record GitHubFileResult<T>(string Sha, T Content);
