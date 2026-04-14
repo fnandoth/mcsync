@@ -39,8 +39,8 @@ public sealed class WorldManager
 
             var targetJarPath = Path.Combine(serverFolderPath, "server.jar");
             
-            // Solo copiar si el servidor.jar no existe en la carpeta destino
-            // o si es diferente del archivo fuente
+            // Copy only when server.jar is missing in destination
+            // or differs from the configured source file.
             if (!File.Exists(targetJarPath) || !FilesAreIdentical(config.ServerJarPath, targetJarPath))
             {
                 File.Copy(config.ServerJarPath, targetJarPath, true);
@@ -92,7 +92,7 @@ public sealed class WorldManager
 
             foreach (var directory in Directory.GetDirectories(serverFolderPath))
             {
-                // No eliminar la carpeta si es la misma que contiene el server.jar original
+                // Do not delete the directory that contains the configured source server.jar.
                 if (!DirectoryContainsFile(directory, config.ServerJarPath))
                 {
                     Directory.Delete(directory, true);
@@ -101,7 +101,7 @@ public sealed class WorldManager
 
             foreach (var file in Directory.GetFiles(serverFolderPath))
             {
-                // No eliminar el server.jar si es el original
+                // Do not delete the configured source server.jar.
                 if (!IsFilePath(file, config.ServerJarPath))
                 {
                     File.Delete(file);
@@ -111,10 +111,10 @@ public sealed class WorldManager
             ZipFile.ExtractToDirectory(zipPath, serverFolderPath, true);
             var targetJarPath = Path.Combine(serverFolderPath, "server.jar");
             
-            // Solo copiar si es necesario (el servidor.jar no está en la misma carpeta)
+            // Copy only when the configured source JAR is outside the target server folder.
             if (!IsFilePath(targetJarPath, config.ServerJarPath))
             {
-                // Intentar copiar con reintentos en caso de bloqueos de archivo
+                // Retry copy to handle transient file locks from external processes.
                 CopyFileWithRetry(config.ServerJarPath, targetJarPath, 3);
             }
 
@@ -222,7 +222,7 @@ public sealed class WorldManager
             catch (IOException) when (attempt < maxRetries - 1)
             {
                 attempt++;
-                System.Threading.Thread.Sleep(100 * attempt); // Esperar progresivamente
+                System.Threading.Thread.Sleep(100 * attempt); // Progressive backoff between retries.
             }
         }
     }

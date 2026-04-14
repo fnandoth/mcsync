@@ -1,15 +1,17 @@
 # GitHub
 
-## Funcion central
+English primary documentation. Spanish version: [README.es.md](README.es.md)
 
-`GitHub` implementa el **control plane remoto**: lectura/escritura de `state.json` y actualizaciones atomicas basadas en SHA para coordinar lease, heartbeat y publicacion de version.
+## Main responsibility
 
-Componentes:
+`GitHub` implements the remote control plane: read/write `state.json` with SHA-based atomic updates for lease, heartbeat, and snapshot publication.
 
-- `GitHubClient`: cliente HTTP para GitHub Contents API.
-- `GitHubStateStore`: implementacion de `IStateStore` con logica de lease y reintentos por conflicto.
+Components:
 
-## Flujo de lease y estado
+- `GitHubClient`: HTTP client for GitHub Contents API.
+- `GitHubStateStore`: `IStateStore` implementation with lease rules and conflict retries.
+
+## Lease and state flow
 
 ```mermaid
 sequenceDiagram
@@ -22,32 +24,25 @@ sequenceDiagram
     S->>C: GetJson(state.json)
     C->>GH: GET /contents/{state}
     GH-->>C: state + sha
-    S->>S: validar lease actual
+    S->>S: validate current lease
     S->>C: PutJson(updatedState, sha)
     C->>GH: PUT /contents/{state}
-    GH-->>C: nuevo sha
+    GH-->>C: new sha
     C-->>S: ok
     S-->>O: AcquireLeaseResult(success)
 ```
 
-## Publicacion de snapshot
+## Publish Snapshot
 
 ```mermaid
 flowchart TD
     A[PublishSnapshot] --> B[Read state + sha]
-    B --> C{Lease coincide?}
-    C -- No --> D[Abortar con error]
-    C -- Si --> E[Actualizar version/checksum/snapshotRef]
+    B --> C{Does the lease match?}
+    C -- No --> D[Abort with error]
+    C -- Yes --> E[Update version/checksum/snapshotRef]
     E --> F[Status = Idle, Host = null]
-    F --> G[PUT con sha actual]
-    G --> H{Conflicto?}
-    H -- Si --> B
-    H -- No --> I[Estado publicado]
+    F --> G[PUT with current sha]
+    G --> H{Conflict?}
+    H -- Yes --> B
+    H -- No --> I[Published status]
 ```
-
-## Motivo del diseno
-
-1. **Control de concurrencia optimista** por SHA: evita sobrescritura ciega.
-2. **Reintentos acotados**: absorbe carreras entre clientes sin bloquear indefinidamente.
-3. **Lease como frontera de seguridad**: ningun cliente publica o heartbeat si no posee lease vigente.
-4. **GitHub como backend MVP**: reduce friccion de despliegue para validar el flujo.

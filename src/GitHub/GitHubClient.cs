@@ -47,8 +47,8 @@ public sealed class GitHubClient
             return null;
         }
 
-        // GitHub Contents API devuelve encoding=none para archivos grandes (>1MB) con media type JSON.
-        // En ese caso debemos pedir el contenido en crudo para evitar snapshots truncados/vacios.
+        // GitHub Contents API may return encoding=none for larger files in JSON mode.
+        // In that case we fetch raw bytes to avoid truncated/empty snapshots.
         if (string.Equals(file.Encoding, "none", StringComparison.OrdinalIgnoreCase))
         {
             var rawContent = await GetRawBytesAsync(config, path, cancellationToken);

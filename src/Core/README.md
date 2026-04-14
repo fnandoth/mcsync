@@ -1,19 +1,21 @@
 # Core
 
-## Funcion central
+English primary documentation. Spanish version: [README.es.md](README.es.md)
 
-`Core` implementa el **motor de orquestacion** de MCSync: define el estado global/local, carga configuracion, aplica reglas de lease y coordina el flujo completo de host.
+## Main responsibility
 
-Componentes principales:
+`Core` contains MCSync orchestration logic: it handles config, shared/local state, lease rules, and the full host lifecycle.
 
-- `SyncOrchestrator`: caso de uso principal (`start -> host -> stop -> publish`).
-- `AppState` / `HostLeaseInfo`: contrato de estado remoto compartido.
-- `IStateStore`: puerto para control plane remoto.
-- `UserConfig` + `ConfigStore`: configuracion persistida y validacion.
-- `LocalWorldStateStore`: version/checksum local aplicado.
-- `AppLogger`: auditoria y eventos para UI.
+Main components:
 
-## Flujo principal
+- `SyncOrchestrator`: main use case (`start -> host -> stop -> publish`).
+- `AppState` / `HostLeaseInfo`: shared remote state contract.
+- `IStateStore`: control-plane port.
+- `UserConfig` + `ConfigStore`: persisted configuration and validation.
+- `LocalWorldStateStore`: applied local version/checksum.
+- `AppLogger`: audit trail and UI events.
+
+## Main flow
 
 ```mermaid
 flowchart TD
@@ -33,10 +35,3 @@ flowchart TD
     N --> O[PublishSnapshot + Release lease]
     O --> P[Status: Idle]
 ```
-
-## Motivo del diseno
-
-1. **Single-writer estricto**: evita corrupcion de mundo y split-brain.
-2. **Orquestador unico**: centraliza reglas de negocio y reduce logica duplicada entre UI y tray.
-3. **Puertos (`IStateStore`, `ISnapshotStorageProvider`)**: permite cambiar backends sin tocar la logica de dominio.
-4. **Estado explicito** (`SyncLifecycleStatus`): facilita UX, debugging y recuperacion.

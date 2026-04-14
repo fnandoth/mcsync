@@ -1,13 +1,15 @@
 # Storage
 
-## Funcion central
+English primary documentation. Spanish version: [README.es.md](README.es.md)
 
-`Storage` abstrae el backend donde se guardan y recuperan snapshots del mundo.
+## Main responsibility
 
-- `ISnapshotStorageProvider`: contrato agnostico para upload/download.
-- `GitHubSnapshotStorageProvider`: implementacion actual usando GitHub Contents API.
+`Storage` abstracts where world snapshots are uploaded and downloaded.
 
-## Flujo de subida
+- `ISnapshotStorageProvider`: provider-agnostic upload/download contract.
+- `GitHubSnapshotStorageProvider`: current implementation using GitHub Contents API.
+
+## Upload flow
 
 ```mermaid
 sequenceDiagram
@@ -17,25 +19,18 @@ sequenceDiagram
     participant GH as GitHub API
 
     O->>P: UploadSnapshotAsync(artifact, worldVersion)
-    P->>P: construir snapshotRef (world-vXXXXXX.zip)
+    P->>P: build snapshotRef (world-vXXXXXX.zip)
     P->>C: PutBytes(snapshotRef, bytes)
     C->>GH: PUT /contents/{snapshotRef}
     GH-->>C: ok
     C-->>P: ok
     P-->>O: SnapshotUploadResult
 ```
-
-## Flujo de descarga
+## Download flow
 
 ```mermaid
 flowchart TD
     A[DownloadSnapshotAsync] --> B[GetBytes snapshotRef]
-    B --> C[Guardar ZIP en temp local]
-    C --> D[Retornar ruta local]
+    B --> C[Save ZIP in local temp]
+    C --> D[Return local path]
 ```
-
-## Motivo del diseno
-
-1. **Puerto de almacenamiento**: desacopla `Core` del proveedor concreto.
-2. **Ruta versionada** por `world-vNNNNNN.zip`: trazabilidad simple de snapshots.
-3. **Evolucion futura**: habilita migrar a Drive/Dropbox/B2 sin rediseñar orquestacion.

@@ -1,17 +1,17 @@
 # MCSync
 
-MCSync es una app de escritorio (C# .NET 8 + WinForms) para **rotar el host de un mundo de Minecraft Java** entre amigos con un modelo de **single-writer + lease**, tomando como base `docs/architecture-mvp.md`.
+MCSync is a desktop app (C# .NET 8 + WinForms) for **rotating the host of a Minecraft Java world** among friends using a **single-writer + lease** model.
 
-## Que resuelve
+## What It Solves
 
-Evita el proceso manual de "me pasas el mundo por ZIP" en cada cambio de host.  
-MCSync coordina automaticamente:
+Eliminates the manual process of "send me the world as a ZIP" every time the host changes.  
+MCSync automatically coordinates:
 
-1. quien puede hostear en ese momento,
-2. cuando bajar la ultima version consistente,
-3. cuando subir el nuevo snapshot al terminar.
+1. who can host at any given moment,
+2. when to download the latest consistent version,
+3. when to upload the new snapshot after finishing.
 
-## Arquitectura funcional (resumen)
+## Functional Architecture (Summary)
 
 ```mermaid
 flowchart TD
@@ -28,61 +28,61 @@ flowchart TD
     TUNNEL --> PLAYIT[playit-cli]
 ```
 
-## Requisitos previos
+## Prerequisites
 
 1. Windows.
-2. `.NET 8 SDK` (si vas a ejecutar desde código fuente).
-3. `Java` instalado y accesible.
-4. `server.jar` disponible localmente (descargado de la pagina oficial de [Minecraft](https://www.minecraft.net/en-us/download/server)).
-5. `playit` instalado y accesible en PATH (descargado de la pagina oficial de [playit.gg](https://playit.gg/download/windows) tiene que ser el `.msi`).
-6. Repositorio de GitHub privado para `state.json` y snapshots.
-7. Token de GitHub con permisos de lectura/escritura al repo.
+2. `.NET 8 SDK` (if running from source code).
+3. `Java` installed and accessible.
+4. `server.jar` available locally (downloaded from the official [Minecraft](https://www.minecraft.net/en-us/download/server) page).
+5. `playit` installed and accessible in PATH (downloaded from the official [playit.gg](https://playit.gg/download/windows) page — must be the `.msi` installer).
+6. Private GitHub repository for `state.json` and snapshots.
+7. GitHub token with read/write permissions to the repo.
 
-## Puesta en marcha
+## Getting Started
 
-1. Clona el repositorio.
-2. Compila:
+1. Clone the repository.
+2. Build:
 
 ```powershell
 dotnet build --nologo
 ```
 
-3. Ejecuta:
+3. Run:
 
 ```powershell
 dotnet run --project .\MCSync.csproj
 ```
 
-4. Abre **CONFIGURACION** y completa como minimo:
+4. Open **SETTINGS** and fill in at minimum:
    - GitHub owner / repo / branch / token
-   - ruta de `server.jar`
-   - URL de `playit.gg`
-   - memoria Java minima y maxima
-5. Guarda configuracion.
+   - path to `server.jar`
+   - `playit.gg` URL
+   - minimum and maximum Java memory
+5. Save the configuration.
 
-## Uso diario
+## Daily Use
 
-### Iniciar host
+### Start Hosting
 
-1. Pulsa **INICIAR HOST**.
-2. La app valida lease remoto.
-3. Si hay snapshot remoto mas nuevo, lo descarga.
-4. Prepara carpeta de servidor e inicia `server.jar`.
-5. Inicia tunel y publica endpoint.
+1. Press **START HOST**.
+2. The app validates the remote lease.
+3. If there is a newer remote snapshot, it downloads it.
+4. Prepares the server folder and starts `server.jar`.
+5. Starts the tunnel and publishes the endpoint.
 
-### Detener host
+### Stop Hosting
 
-1. Pulsa **DETENER HOST Y SINCRONIZAR**.
-2. Marca estado remoto como `Transferring`.
-3. Detiene servidor y tunel.
-4. Comprime mundo, calcula checksum y sube snapshot.
-5. Publica nueva version y libera lease.
+1. Press **STOP HOST AND SYNC**.
+2. Marks the remote state as `Transferring`.
+3. Stops the server and tunnel.
+4. Compresses the world, calculates the checksum, and uploads the snapshot.
+5. Publishes the new version and releases the lease.
 
-### Flujo de ciclo completo
+### Full Cycle Flow
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
+    participant U as User
     participant UI as Dashboard/Tray
     participant O as SyncOrchestrator
     participant S as GitHubStateStore
@@ -91,7 +91,7 @@ sequenceDiagram
     participant T as TunnelManager
     participant P as SnapshotProvider
 
-    U->>UI: Iniciar host
+    U->>UI: Start host
     UI->>O: StartHostingAsync
     O->>S: TryAcquireLease
     S-->>O: Lease OK
@@ -101,7 +101,7 @@ sequenceDiagram
     O->>S: UpdateTunnelAddress + Heartbeat
     O-->>UI: Hosting
 
-    U->>UI: Detener host
+    U->>UI: Stop host
     UI->>O: StopHostingAsync
     O->>S: MarkTransferring
     O->>M: StopGracefullyAsync
@@ -112,15 +112,15 @@ sequenceDiagram
     O-->>UI: Idle
 ```
 
-## Estado del proyecto
+## Project Status
 
-La app esta en **fase 1 (demo funcional)**: flujo end-to-end operable, UI para uso diario y logging local.
+The app is in **phase 1 (functional demo)**: end-to-end operable flow, UI for daily use, and local logging.
 
-## Documentacion por modulo
+## Module Documentation
 
-- `docs/architecture-mvp.md`: arquitectura objetivo del MVP.
-- `src/Core/README.md`: orquestacion, estados y consistencia.
-- `src/GitHub/README.md`: control plane y semantica de lease.
-- `src/Minecraft/README.md`: ciclo local de server y snapshot.
-- `src/Storage/README.md`: abstraccion y provider de snapshots.
-- `src/Tunnel/README.md`: ciclo de vida de `playit-cli`.
+- `docs/architecture-mvp.md`: target MVP architecture.
+- `src/Core/README.md`: orchestration, states, and consistency.
+- `src/GitHub/README.md`: control plane and lease semantics.
+- `src/Minecraft/README.md`: local server and snapshot lifecycle.
+- `src/Storage/README.md`: snapshot abstraction and provider.
+- `src/Tunnel/README.md`: `playit-cli` lifecycle.

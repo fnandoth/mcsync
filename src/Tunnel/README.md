@@ -1,31 +1,27 @@
 # Tunnel
 
-## Funcion central
+English primary documentation. Spanish version: [README.es.md](README.es.md)
 
-`Tunnel` controla el proceso de `playit-cli` para exponer el servidor local por una direccion publica durante el hosting.
+## Main responsibility
 
-Componente:
+`Tunnel` manages the `playit-cli` process to expose the local Minecraft server through a public endpoint while hosting.
 
-- `TunnelManager`: arranque, logging, estado y parada del proceso del tunel.
+Component:
 
-## Flujo de ciclo de vida
+- `TunnelManager`: start, logging, state tracking, and stop logic for the tunnel process.
+
+## Lifecycle flow
 
 ```mermaid
 flowchart TD
-    A[StartAsync] --> B{PlayitGGUrl configurada?}
+    A[StartAsync] --> B{PlayitGGUrl configured?}
     B -- No --> C[Error]
-    B -- Si --> D[Iniciar proceso playit]
-    D --> E[Escuchar stdout/stderr]
-    E --> F[Retornar direccion configurada]
-    F --> G[Tunel activo]
+    B -- Yes --> D[Start playit process]
+    D --> E[Read stdout/stderr]
+    E --> F[Return configured address]
+    F --> G[Tunnel active]
 
-    H[StopAsync] --> I{Proceso activo?}
-    I -- Si --> J[Kill + WaitForExit]
+    H[StopAsync] --> I{Process active?}
+    I -- Yes --> J[Kill + WaitForExit]
     I -- No --> K[No-op]
 ```
-
-## Motivo del diseño
-
-1. **Encapsulacion de proceso externo**: evita mezclar detalles de `playit` en `Core`.
-2. **Interfaz minima** (start/stop): reduce superficie de error en una dependencia externa.
-3. **Logging centralizado**: facilita diagnostico de conectividad y arranque.

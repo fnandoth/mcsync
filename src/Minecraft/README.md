@@ -1,46 +1,40 @@
 # Minecraft
 
-## Funcion central
+English primary documentation. Spanish version: [README.es.md](README.es.md)
 
-`Minecraft` gestiona el **data plane local del mundo** y el ciclo de vida del proceso Java:
+## Main responsibility
 
-- `ServerManager`: inicia, monitorea y detiene `server.jar`.
-- `WorldManager`: prepara carpeta, extrae snapshots remotos y genera snapshots locales.
+`Minecraft` handles the local world data plane and Java process lifecycle:
 
-## Flujo local de arranque y cierre
+- `ServerManager`: starts, monitors, and stops `server.jar`.
+- `WorldManager`: prepares folders, extracts remote snapshots, and creates local snapshots.
+
+## Local start/stop flow
 
 ```mermaid
 flowchart TD
-    A[PrepareServerFolder] --> B[Copiar server.jar si cambia]
-    B --> C[Escribir eula=true]
+    A[PrepareServerFolder] --> B[Copy server.jar if needed]
+    B --> C[Write eula=true]
     C --> D[StartAsync]
-    D --> E[Esperar log de readiness]
+    D --> E[Wait for readiness log]
     E --> F[Hosting]
 
     G[StopGracefullyAsync] --> H[save-off]
     H --> I[save-all flush]
     I --> J[stop]
-    J --> K{Salio en timeout?}
+    J --> K{Exited in timeout?}
     K -- No --> L[KillAsync]
-    K -- Si --> M[CreateSnapshotAsync]
+    K -- Yes --> M[CreateSnapshotAsync]
     L --> M
     M --> N[ZIP + SHA-256]
 ```
-
-## Flujo de snapshot remoto -> local
+## Remote-to-local snapshot flow
 
 ```mermaid
 flowchart LR
     A[Download ZIP] --> B[ExtractSnapshotAsync]
-    B --> C[Limpiar carpeta server]
-    C --> D[Extraer ZIP]
-    D --> E[Restaurar server.jar]
-    E --> F[Actualizar LocalWorldState]
+    B --> C[Clean server folder]
+    C --> D[Extract ZIP]
+    D --> E[Restore server.jar]
+    E --> F[Update LocalWorldState]
 ```
-
-## Motivo del diseno
-
-1. **Separar proceso Java del orchestration**: simplifica fallos y manejo de lifecycle.
-2. **Snapshot completo ZIP**: estrategia robusta para MVP, facil de auditar y recuperar.
-3. **Checksum SHA-256**: verifica integridad y sincronizacion local/remota.
-4. **Comandos de cierre ordenado** (`save-all flush`): minimiza perdida de progreso.
