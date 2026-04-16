@@ -41,6 +41,7 @@ internal static class NothingTheme
         form.BackColor = Black;
         form.ForeColor = TextPrimary;
         form.Font = Ui(10F);
+        form.Icon = AppIconProvider.Icon;
     }
 
     public static void StyleCard(Control control, int padding = 16)

@@ -9,6 +9,13 @@
     <RootNamespace>MCSync</RootNamespace>
     <AssemblyName>MCSync</AssemblyName>
     <LangVersion>latest</LangVersion>
+    <ApplicationIcon>src\assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="src\assets\icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

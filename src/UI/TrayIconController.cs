@@ -85,7 +85,7 @@ public sealed class TrayIconController : IDisposable
         {
             Text = "MCSync",
             Visible = true,
-            Icon = SystemIcons.Application,
+            Icon = AppIconProvider.Icon,
             ContextMenuStrip = _menu
         };
 
