@@ -60,16 +60,6 @@ public sealed class DashboardForm : Form
             ForeColor = NothingTheme.TextDisplay,
             TextAlign = ContentAlignment.BottomLeft
         };
-        var subtitle = new Label
-        {
-            Text = "INICIA O DETIENE EL HOST Y REVISA EL ESTADO DEL MUNDO EN UNA SOLA VISTA.",
-            Dock = DockStyle.Top,
-            Height = 26,
-            Font = NothingTheme.Mono(9F),
-            ForeColor = NothingTheme.TextSecondary,
-            TextAlign = ContentAlignment.BottomLeft
-        };
-        header.Controls.Add(subtitle);
         header.Controls.Add(title);
         header.Controls.Add(badge);
         root.Controls.Add(header, 0, 0);
@@ -89,7 +79,7 @@ public sealed class DashboardForm : Form
         statusCard.Dock = DockStyle.Fill;
         statusCard.Margin = new Padding(0, 16, 12, 0);
 
-        var statusTitle = NothingTheme.CreateMetaLabel("Estado actual", 22);
+        var statusTitle = NothingTheme.CreateMetaLabel(Localizer.Get("Dashboard.StatusTitle"), 22);
         _statusValueLabel = new Label
         {
             Text = "IDLE",
@@ -100,17 +90,17 @@ public sealed class DashboardForm : Form
         };
         _statusDetailLabel = new Label
         {
-            Text = "Listo",
+            Text = Localizer.Get("Common.Ready"),
             Dock = DockStyle.Top,
             Height = 30,
             Font = NothingTheme.Ui(12F),
             ForeColor = NothingTheme.TextPrimary
         };
-        _remoteStateLabel = CreateDetailLabel("ESTADO REMOTO: SIN DATOS", NothingTheme.TextPrimary);
-        _versionLabel = CreateDetailLabel("VERSION MUNDO: -", NothingTheme.TextSecondary);
-        _hostLabel = CreateDetailLabel("HOST ACTIVO: -", NothingTheme.TextSecondary);
+        _remoteStateLabel = CreateDetailLabel(Localizer.Get("Dashboard.RemoteStateNoData"), NothingTheme.TextPrimary);
+        _versionLabel = CreateDetailLabel(Localizer.Format("Dashboard.WorldVersionFormat", "-"), NothingTheme.TextSecondary);
+        _hostLabel = CreateDetailLabel(Localizer.Format("Dashboard.ActiveHostFormat", "-"), NothingTheme.TextSecondary);
 
-        var addressTitle = NothingTheme.CreateMetaLabel("IP publica", 22);
+        var addressTitle = NothingTheme.CreateMetaLabel(Localizer.Get("Dashboard.AddressTitle"), 22);
         addressTitle.Padding = new Padding(0, 6, 0, 0);
         _addressTextBox = new TextBox
         {
@@ -135,16 +125,6 @@ public sealed class DashboardForm : Form
         actionsCard.Dock = DockStyle.Fill;
         actionsCard.Margin = new Padding(12, 16, 0, 0);
 
-        var actionsTitle = NothingTheme.CreateMetaLabel("Acciones", 24);
-        var actionsSubtitle = new Label
-        {
-            Text = "LA ACCION PRINCIPAL CAMBIA SEGUN EL ESTADO DEL HOST.",
-            Dock = DockStyle.Top,
-            Height = 30,
-            Font = NothingTheme.Mono(9F),
-            ForeColor = NothingTheme.TextSecondary
-        };
-
         var actionsTable = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
@@ -161,11 +141,11 @@ public sealed class DashboardForm : Form
             actionsTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
 
-        _hostActionButton = CreateActionButton("Iniciar host", NothingButtonVariant.Primary);
-        _copyAddressButton = CreateActionButton("Copiar IP", NothingButtonVariant.Secondary);
-        _refreshButton = CreateActionButton("Actualizar estado", NothingButtonVariant.Secondary);
-        _settingsButton = CreateActionButton("Configuracion", NothingButtonVariant.Secondary);
-        _logsButton = CreateActionButton("Ver logs", NothingButtonVariant.Ghost);
+        _hostActionButton = CreateActionButton(Localizer.Get("Dashboard.HostActionStart"), NothingButtonVariant.Primary);
+        _copyAddressButton = CreateActionButton(Localizer.Get("Dashboard.CopyIp"), NothingButtonVariant.Secondary);
+        _refreshButton = CreateActionButton(Localizer.Get("Dashboard.RefreshState"), NothingButtonVariant.Secondary);
+        _settingsButton = CreateActionButton(Localizer.Get("Dashboard.Settings"), NothingButtonVariant.Secondary);
+        _logsButton = CreateActionButton(Localizer.Get("Dashboard.ViewLogs"), NothingButtonVariant.Ghost);
 
         _hostActionButton.Click += async (_, _) => await ToggleHostingAsync();
         _copyAddressButton.Click += async (_, _) => await CopyAddressAsync();
@@ -180,8 +160,6 @@ public sealed class DashboardForm : Form
         actionsTable.Controls.Add(_logsButton, 0, 4);
 
         actionsCard.Controls.Add(actionsTable);
-        actionsCard.Controls.Add(actionsSubtitle);
-        actionsCard.Controls.Add(actionsTitle);
         content.Controls.Add(actionsCard, 1, 0);
 
         root.Controls.Add(content, 0, 1);
@@ -296,7 +274,7 @@ public sealed class DashboardForm : Form
             var address = await _orchestrator.GetCurrentAddressAsync();
             if (string.IsNullOrWhiteSpace(address))
             {
-                MessageBox.Show(this, "No hay una IP publica disponible en este momento.", "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, Localizer.Get("Dashboard.NoPublicIp"), "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -347,6 +325,7 @@ public sealed class DashboardForm : Form
         if (form.ShowDialog(this) == DialogResult.OK && form.SavedConfig is not null)
         {
             await _configStore.SaveAsync(form.SavedConfig);
+            Localizer.SetLanguage(form.SavedConfig.UiLanguage);
             await RefreshRemoteStateAsync(showErrors: false);
         }
     }
@@ -395,13 +374,16 @@ public sealed class DashboardForm : Form
             _ => NothingTheme.TextDisplay
         };
 
-        _statusDetailLabel.Text = _orchestrator.StatusMessage;
+        var statusDetail = _orchestrator.Status == SyncLifecycleStatus.Idle
+            ? Localizer.Get("Common.Ready")
+            : _orchestrator.StatusMessage;
+        _statusDetailLabel.Text = statusDetail;
         _addressTextBox.Text = string.IsNullOrWhiteSpace(address) ? "-" : address;
         _remoteStateLabel.Text = hasActiveHost
-            ? $"ESTADO REMOTO: HOST ACTIVO ({remoteState?.Host?.DisplayName?.ToUpperInvariant()})"
-            : "ESTADO REMOTO: SIN HOST ACTIVO";
-        _versionLabel.Text = $"VERSION MUNDO: {remoteState?.WorldVersion ?? 0}";
-        _hostLabel.Text = $"HOST ACTIVO: {(string.IsNullOrWhiteSpace(address) ? "-" : address)}";
+            ? Localizer.Format("Dashboard.RemoteStateActiveHostFormat", remoteState?.Host?.DisplayName?.ToUpperInvariant())
+            : Localizer.Get("Dashboard.RemoteStateNoActiveHost");
+        _versionLabel.Text = Localizer.Format("Dashboard.WorldVersionFormat", remoteState?.WorldVersion ?? 0);
+        _hostLabel.Text = Localizer.Format("Dashboard.ActiveHostFormat", string.IsNullOrWhiteSpace(address) ? "-" : address);
 
         UpdateActionButtons();
     }
@@ -412,15 +394,19 @@ public sealed class DashboardForm : Form
         var isHosting = _orchestrator.IsHosting;
         var interactive = !_isBusy;
 
+        _copyAddressButton.Text = Localizer.Get("Dashboard.CopyIp");
+        _refreshButton.Text = Localizer.Get("Dashboard.RefreshState");
+        _settingsButton.Text = Localizer.Get("Dashboard.Settings");
+        _logsButton.Text = Localizer.Get("Dashboard.ViewLogs");
         _hostActionButton.Enabled = interactive;
         if (isHosting)
         {
-            _hostActionButton.Text = "Detener host y sincronizar";
+            _hostActionButton.Text = Localizer.Get("Dashboard.HostActionStopSync");
             ApplyButtonStyle(_hostActionButton, NothingButtonVariant.Destructive);
         }
         else
         {
-            _hostActionButton.Text = "Iniciar host";
+            _hostActionButton.Text = Localizer.Get("Dashboard.HostActionStart");
             ApplyButtonStyle(_hostActionButton, NothingButtonVariant.Primary);
         }
 

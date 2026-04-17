@@ -21,6 +21,8 @@ internal static class Program
     {
         var logger = new AppLogger();
         var configStore = new ConfigStore();
+        var initialConfig = configStore.LoadAsync().GetAwaiter().GetResult();
+        Localizer.SetLanguage(initialConfig.UiLanguage);
         var localWorldStateStore = new LocalWorldStateStore();
         var gitHubClient = new GitHubClient(logger);
         var stateStore = new GitHubStateStore(gitHubClient, logger);

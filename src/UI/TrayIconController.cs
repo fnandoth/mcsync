@@ -39,15 +39,15 @@ public sealed class TrayIconController : IDisposable
         _uiInvoker = new Control();
         _ = _uiInvoker.Handle;
 
-        _statusItem = new ToolStripMenuItem("ESTADO: LISTO") { Enabled = false };
-        _openDashboardItem = new ToolStripMenuItem("ABRIR PANEL");
-        _startHostItem = new ToolStripMenuItem("INICIAR COMO HOST");
-        _stopHostItem = new ToolStripMenuItem("DETENER HOST Y SUBIR MUNDO");
-        _copyAddressItem = new ToolStripMenuItem("COPIAR IP ACTUAL");
-        _refreshStateItem = new ToolStripMenuItem("ACTUALIZAR ESTADO");
-        _settingsItem = new ToolStripMenuItem("CONFIGURACION");
-        _logsItem = new ToolStripMenuItem("VER LOGS");
-        _exitItem = new ToolStripMenuItem("SALIR");
+        _statusItem = new ToolStripMenuItem(Localizer.Get("Tray.StatusReady")) { Enabled = false };
+        _openDashboardItem = new ToolStripMenuItem(Localizer.Get("Tray.OpenDashboard"));
+        _startHostItem = new ToolStripMenuItem(Localizer.Get("Tray.StartHost"));
+        _stopHostItem = new ToolStripMenuItem(Localizer.Get("Tray.StopHostUpload"));
+        _copyAddressItem = new ToolStripMenuItem(Localizer.Get("Tray.CopyCurrentIp"));
+        _refreshStateItem = new ToolStripMenuItem(Localizer.Get("Tray.RefreshState"));
+        _settingsItem = new ToolStripMenuItem(Localizer.Get("Tray.Settings"));
+        _logsItem = new ToolStripMenuItem(Localizer.Get("Tray.ViewLogs"));
+        _exitItem = new ToolStripMenuItem(Localizer.Get("Tray.Exit"));
 
         _openDashboardItem.Click += (_, _) => _showDashboardAction();
         _startHostItem.Click += async (_, _) => await StartHostingAsync();
@@ -100,7 +100,7 @@ public sealed class TrayIconController : IDisposable
         var config = await _orchestrator.LoadConfigAsync();
         if (!config.IsValid(out _))
         {
-            ShowBalloon("MCSync", "Completa la configuracion inicial para empezar.");
+            ShowBalloon("MCSync", Localizer.Get("Tray.CompleteInitialConfig"));
             await ShowSettingsAsync();
         }
     }
@@ -128,7 +128,7 @@ public sealed class TrayIconController : IDisposable
         try
         {
             await _orchestrator.StopHostingAsync();
-            ShowBalloon("MCSync", "Mundo sincronizado y host liberado.");
+            ShowBalloon("MCSync", Localizer.Get("Tray.WorldSyncedReleased"));
         }
         catch (Exception ex)
         {
@@ -148,12 +148,12 @@ public sealed class TrayIconController : IDisposable
             var address = await _orchestrator.GetCurrentAddressAsync();
             if (string.IsNullOrWhiteSpace(address))
             {
-                MessageBox.Show("No hay una IP publica disponible en este momento.", "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(Localizer.Get("Tray.NoPublicIp"), "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             Clipboard.SetText(address);
-            ShowBalloon("MCSync", $"Direccion copiada: {address}");
+            ShowBalloon("MCSync", Localizer.Format("Tray.AddressCopiedFormat", address));
         }
         catch (Exception ex)
         {
@@ -168,8 +168,8 @@ public sealed class TrayIconController : IDisposable
         {
             var state = await _orchestrator.RefreshStateAsync();
             var summary = state.HasActiveHost(DateTimeOffset.UtcNow)
-                ? $"Host activo: {state.Host?.DisplayName} {state.Host?.TunnelAddress}"
-                : $"Sin host activo. Ultima version: {state.WorldVersion}";
+                ? Localizer.Format("Tray.ActiveHostSummaryFormat", state.Host?.DisplayName, state.Host?.TunnelAddress)
+                : Localizer.Format("Tray.NoActiveHostSummaryFormat", state.WorldVersion);
 
             ShowBalloon("MCSync", summary);
         }
@@ -192,7 +192,8 @@ public sealed class TrayIconController : IDisposable
         if (form.ShowDialog() == DialogResult.OK && form.SavedConfig is not null)
         {
             await _configStore.SaveAsync(form.SavedConfig);
-            ShowBalloon("MCSync", "Configuracion guardada.");
+            Localizer.SetLanguage(form.SavedConfig.UiLanguage);
+            ShowBalloon("MCSync", Localizer.Get("Tray.ConfigurationSaved"));
         }
 
         UpdateMenuState();
@@ -216,7 +217,7 @@ public sealed class TrayIconController : IDisposable
         if (_orchestrator.IsHosting)
         {
             var confirm = MessageBox.Show(
-                "El host esta activo. Si sales ahora se intentara detener el servidor y subir el mundo. ¿Continuar?",
+                Localizer.Get("Tray.ExitConfirmHosting"),
                 "MCSync",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
@@ -261,7 +262,21 @@ public sealed class TrayIconController : IDisposable
     private void UpdateMenuState()
     {
         var activeAddress = _orchestrator.CurrentTunnelAddress ?? _orchestrator.LastKnownRemoteState?.Host?.TunnelAddress;
-        _statusItem.Text = $"ESTADO: {_orchestrator.Status.ToString().ToUpperInvariant()} - {_orchestrator.StatusMessage.ToUpperInvariant()}";
+        _openDashboardItem.Text = Localizer.Get("Tray.OpenDashboard");
+        _startHostItem.Text = Localizer.Get("Tray.StartHost");
+        _stopHostItem.Text = Localizer.Get("Tray.StopHostUpload");
+        _copyAddressItem.Text = Localizer.Get("Tray.CopyCurrentIp");
+        _refreshStateItem.Text = Localizer.Get("Tray.RefreshState");
+        _settingsItem.Text = Localizer.Get("Tray.Settings");
+        _logsItem.Text = Localizer.Get("Tray.ViewLogs");
+        _exitItem.Text = Localizer.Get("Tray.Exit");
+        var statusMessage = _orchestrator.Status == SyncLifecycleStatus.Idle
+            ? Localizer.Get("Common.Ready")
+            : _orchestrator.StatusMessage;
+        _statusItem.Text = Localizer.Format(
+            "Tray.StatusFormat",
+            _orchestrator.Status.ToString().ToUpperInvariant(),
+            statusMessage.ToUpperInvariant());
         _startHostItem.Enabled = !_orchestrator.IsHosting;
         _stopHostItem.Enabled = _orchestrator.IsHosting;
         _copyAddressItem.Enabled = !string.IsNullOrWhiteSpace(activeAddress);

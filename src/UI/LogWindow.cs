@@ -12,7 +12,7 @@ public sealed class LogWindow : Form
     public LogWindow(AppLogger logger)
     {
         _logger = logger;
-        Text = "Logs de MCSync";
+        Text = Localizer.Get("LogWindow.Title");
         Width = 920;
         Height = 620;
         StartPosition = FormStartPosition.CenterScreen;
@@ -63,7 +63,7 @@ public sealed class LogWindow : Form
 
         var title = new Label
         {
-            Text = "Actividad del sistema",
+            Text = Localizer.Get("LogWindow.SystemActivity"),
             Dock = DockStyle.Fill,
             AutoSize = true,
             Font = NothingTheme.Display(30F),
@@ -104,7 +104,7 @@ public sealed class LogWindow : Form
 
         _copyButton = new Button
         {
-            Text = "Copiar",
+            Text = Localizer.Get("LogWindow.Copy"),
             Width = 96,
             Height = 32,
             Margin = new Padding(8, 0, 0, 0)
@@ -114,7 +114,7 @@ public sealed class LogWindow : Form
 
         _clearButton = new Button
         {
-            Text = "Limpiar",
+            Text = Localizer.Get("LogWindow.Clear"),
             Width = 96,
             Height = 32,
             Margin = new Padding(8, 0, 0, 0)

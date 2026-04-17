@@ -18,6 +18,7 @@ public sealed class UserConfig
     public string ServerJarPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "server.jar");
     public string JavaExecutablePath { get; set; } = "java";
     public string PlayitGGUrl { get; set; } = string.Empty;
+    public UiLanguage UiLanguage { get; set; } = UiLanguage.Spanish;
     public int JavaMinMemoryMb { get; set; } = 4096;
     public int JavaMaxMemoryMb { get; set; } = 4096;
     public int LeaseTtlSeconds { get; set; } = 45;
@@ -60,38 +61,38 @@ public sealed class UserConfig
     {
         if (string.IsNullOrWhiteSpace(GitHubOwner))
         {
-            error = "Falta el owner del repositorio de GitHub.";
+            error = Localizer.Get("UserConfig.MissingGitHubOwner");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(GitHubRepo))
         {
-            error = "Falta el nombre del repositorio de GitHub.";
+            error = Localizer.Get("UserConfig.MissingGitHubRepo");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(GetGitHubToken()))
         {
-            error = "Falta el token de GitHub.";
+            error = Localizer.Get("UserConfig.MissingGitHubToken");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(ServerJarPath) || !File.Exists(ServerJarPath))
         {
-            error = "No se encontro server.jar en la ruta configurada.";
+            error = Localizer.Get("UserConfig.MissingServerJar");
             return false;
         }
 
 
         if (string.IsNullOrEmpty(PlayitGGUrl))
         {
-            error = "Falta la URL de playit.gg.";
+            error = Localizer.Get("UserConfig.MissingPlayitUrl");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(JavaExecutablePath))
         {
-            error = "Falta la ruta del ejecutable de Java.";
+            error = Localizer.Get("UserConfig.MissingJavaPath");
             return false;
         }
 

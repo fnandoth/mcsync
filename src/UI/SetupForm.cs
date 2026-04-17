@@ -6,12 +6,17 @@ public sealed class SetupForm : Form
 {
     private readonly UserConfig _originalConfig;
     private readonly Dictionary<string, Control> _fields = new();
+    private readonly IReadOnlyList<LanguageOption> _languageOptions =
+    [
+        new(UiLanguage.Spanish, "Español"),
+        new(UiLanguage.English, "English")
+    ];
 
     public SetupForm(UserConfig config)
     {
         _originalConfig = config.Clone();
 
-        Text = "Configuracion de MCSync";
+        Text = Localizer.Get("Setup.Title");
         Width = 900;
         Height = 610;
         StartPosition = FormStartPosition.CenterScreen;
@@ -53,7 +58,7 @@ public sealed class SetupForm : Form
 
         var subtitleLabel = new Label
         {
-            Text = "SOLO CAMPOS ESENCIALES PARA SINCRONIZAR, HOSTEAR Y RECUPERAR ESTADO REMOTO.",
+            Text = Localizer.Get("Setup.Subtitle"),
             Dock = DockStyle.Top,
             AutoSize = false,
             Height = 28,
@@ -89,19 +94,20 @@ public sealed class SetupForm : Form
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 106));
 
-        AddSectionRow(table, "GitHub");
+        AddSectionRow(table, Localizer.Get("Setup.SectionGitHub"));
 
-        AddTextRow(table, "GitHub owner", "GitHubOwner", _originalConfig.GitHubOwner);
-        AddTextRow(table, "GitHub repo", "GitHubRepo", _originalConfig.GitHubRepo);
-        AddTextRow(table, "GitHub branch", "GitHubBranch", _originalConfig.GitHubBranch);
-        AddTextRow(table, "GitHub token", "GitHubToken", _originalConfig.GetGitHubToken(), password: true);
+        AddTextRow(table, Localizer.Get("Setup.FieldGitHubOwner"), "GitHubOwner", _originalConfig.GitHubOwner);
+        AddTextRow(table, Localizer.Get("Setup.FieldGitHubRepo"), "GitHubRepo", _originalConfig.GitHubRepo);
+        AddTextRow(table, Localizer.Get("Setup.FieldGitHubBranch"), "GitHubBranch", _originalConfig.GitHubBranch);
+        AddTextRow(table, Localizer.Get("Setup.FieldGitHubToken"), "GitHubToken", _originalConfig.GetGitHubToken(), password: true);
+        AddLanguageRow(table);
 
-        AddSectionRow(table, "Servidor");
+        AddSectionRow(table, Localizer.Get("Setup.SectionServer"));
 
-        AddFileRow(table, "Server jar", "ServerJarPath", _originalConfig.ServerJarPath, "JAR (*.jar)|*.jar|Todos (*.*)|*.*");
-        AddTextRow(table, "playit.gg URL", "PlayitGGUrl", _originalConfig.PlayitGGUrl);
-        AddTextRow(table, "RAM minima MB", "JavaMinMemoryMb", _originalConfig.JavaMinMemoryMb.ToString());
-        AddTextRow(table, "RAM maxima MB", "JavaMaxMemoryMb", _originalConfig.JavaMaxMemoryMb.ToString());
+        AddFileRow(table, Localizer.Get("Setup.FieldServerJar"), "ServerJarPath", _originalConfig.ServerJarPath, Localizer.Get("Setup.FileDialogFilter"));
+        AddTextRow(table, Localizer.Get("Setup.FieldPlayitUrl"), "PlayitGGUrl", _originalConfig.PlayitGGUrl);
+        AddTextRow(table, Localizer.Get("Setup.FieldJavaMinMb"), "JavaMinMemoryMb", _originalConfig.JavaMinMemoryMb.ToString());
+        AddTextRow(table, Localizer.Get("Setup.FieldJavaMaxMb"), "JavaMaxMemoryMb", _originalConfig.JavaMaxMemoryMb.ToString());
 
         scrollPanel.Controls.Add(table);
         root.Controls.Add(scrollPanel, 0, 1);
@@ -117,7 +123,7 @@ public sealed class SetupForm : Form
 
         var saveButton = new Button
         {
-            Text = "Guardar",
+            Text = Localizer.Get("Setup.Save"),
             AutoSize = false,
             Width = 120,
             Height = 36
@@ -127,7 +133,7 @@ public sealed class SetupForm : Form
 
         var cancelButton = new Button
         {
-            Text = "Cancelar",
+            Text = Localizer.Get("Setup.Cancel"),
             AutoSize = false,
             Width = 120,
             Height = 36,
@@ -190,7 +196,7 @@ public sealed class SetupForm : Form
 
         var button = new Button
         {
-            Text = "Buscar",
+            Text = Localizer.Get("Setup.Browse"),
             AutoSize = false,
             Width = 92,
             Height = 32,
@@ -216,6 +222,37 @@ public sealed class SetupForm : Form
         table.Controls.Add(textBox, 1, row);
         table.Controls.Add(button, 2, row);
         _fields[key] = textBox;
+    }
+
+    private void AddLanguageRow(TableLayoutPanel table)
+    {
+        var row = table.RowCount++;
+        table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var labelControl = CreateFieldLabel(Localizer.Get("Setup.FieldLanguage"));
+        var combo = new ComboBox
+        {
+            Dock = DockStyle.Fill,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Margin = new Padding(0, 2, 0, 8),
+            BackColor = NothingTheme.SurfaceRaised,
+            ForeColor = NothingTheme.TextDisplay,
+            FlatStyle = FlatStyle.Flat,
+            Font = NothingTheme.Ui(10F)
+        };
+
+        foreach (var option in _languageOptions)
+        {
+            combo.Items.Add(option);
+        }
+
+        var selected = _languageOptions.FirstOrDefault(x => x.Value == _originalConfig.UiLanguage) ?? _languageOptions[0];
+        combo.SelectedItem = selected;
+
+        table.Controls.Add(labelControl, 0, row);
+        table.Controls.Add(combo, 1, row);
+        table.Controls.Add(new Label { AutoSize = true }, 2, row);
+        _fields["UiLanguage"] = combo;
     }
 
     private Label CreateFieldLabel(string text)
@@ -255,13 +292,13 @@ public sealed class SetupForm : Form
     {
         if (!int.TryParse(GetText("JavaMinMemoryMb"), out var minMb) || minMb <= 0)
         {
-            MessageBox.Show(this, "La RAM minima debe ser un entero positivo.", "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, Localizer.Get("Setup.MinRamValidation"), "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         if (!int.TryParse(GetText("JavaMaxMemoryMb"), out var maxMb) || maxMb < minMb)
         {
-            MessageBox.Show(this, "La RAM maxima debe ser un entero y no puede ser menor que la minima.", "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, Localizer.Get("Setup.MaxRamValidation"), "MCSync", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -275,6 +312,7 @@ public sealed class SetupForm : Form
         config.WorldId = "survival-main";//GetText("WorldId");
         config.ServerJarPath = GetText("ServerJarPath");
         config.PlayitGGUrl = GetText("PlayitGGUrl");
+        config.UiLanguage = GetUiLanguage();
         config.JavaMinMemoryMb = minMb;
         config.JavaMaxMemoryMb = maxMb;
 
@@ -296,4 +334,19 @@ public sealed class SetupForm : Form
     }
 
     private string GetText(string key) => (_fields[key] as TextBox)?.Text.Trim() ?? string.Empty;
+
+    private UiLanguage GetUiLanguage()
+    {
+        if (_fields["UiLanguage"] is ComboBox combo && combo.SelectedItem is LanguageOption option)
+        {
+            return option.Value;
+        }
+
+        return UiLanguage.Spanish;
+    }
+
+    private sealed record LanguageOption(UiLanguage Value, string Label)
+    {
+        public override string ToString() => Label;
+    }
 }

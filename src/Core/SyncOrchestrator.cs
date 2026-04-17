@@ -44,7 +44,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
 
     public SyncLifecycleStatus Status { get; private set; } = SyncLifecycleStatus.Idle;
 
-    public string StatusMessage { get; private set; } = "Listo";
+    public string StatusMessage { get; private set; } = Localizer.Get("Common.Ready");
 
     public string? CurrentTunnelAddress { get; private set; }
 
@@ -88,7 +88,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         {
             if (IsHosting)
             {
-                throw new InvalidOperationException("La app ya esta hospedando el mundo.");
+                throw new InvalidOperationException(Localizer.Get("Sync.AlreadyHosting"));
             }
 
             var config = await _configStore.LoadAsync(cancellationToken);
@@ -98,7 +98,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
             }
 
             _activeConfig = config;
-            SetStatus(SyncLifecycleStatus.SyncingDown, "Verificando estado remoto...");
+            SetStatus(SyncLifecycleStatus.SyncingDown, Localizer.Get("Sync.VerifyingRemoteState"));
 
             var acquireResult = await _stateStore.TryAcquireLeaseAsync(config, cancellationToken);
             if (!acquireResult.Success)
@@ -109,7 +109,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
                     throw new InvalidOperationException($"{acquireResult.FailureMessage} Host actual: {activeEndpoint}");
                 }
 
-                throw new InvalidOperationException(acquireResult.FailureMessage ?? "No fue posible tomar el rol de host.");
+                throw new InvalidOperationException(acquireResult.FailureMessage ?? Localizer.Get("Sync.CannotAcquireHostRole"));
             }
 
             _activeLeaseId = acquireResult.LeaseId;
@@ -120,19 +120,19 @@ public sealed class SyncOrchestrator : IAsyncDisposable
             {
                 await SyncDownIfRequiredAsync(config, acquireResult.State, cancellationToken);
 
-                SetStatus(SyncLifecycleStatus.StartingServer, "Preparando carpeta del servidor...");
+                SetStatus(SyncLifecycleStatus.StartingServer, Localizer.Get("Sync.PreparingServerFolder"));
                 await _worldManager.PrepareServerFolderAsync(config, cancellationToken);
 
-                SetStatus(SyncLifecycleStatus.StartingServer, "Iniciando server.jar...");
+                SetStatus(SyncLifecycleStatus.StartingServer, Localizer.Get("Sync.StartingServerJar"));
                 await _serverManager.StartAsync(config, cancellationToken);
 
-                SetStatus(SyncLifecycleStatus.StartingServer, "Abriendo tunel playit...");
+                SetStatus(SyncLifecycleStatus.StartingServer, Localizer.Get("Sync.OpeningPlayitTunnel"));
                 CurrentTunnelAddress = await _tunnelManager.StartAsync(config, cancellationToken);
                 LastKnownRemoteState = await _stateStore.UpdateTunnelAddressAsync(config, acquireResult.LeaseId, CurrentTunnelAddress, cancellationToken);
 
                 var connectedAddress = string.IsNullOrWhiteSpace(CurrentTunnelAddress)
-                    ? "Servidor listo. Esperando direccion de tunel..."
-                    : $"Servidor listo en {CurrentTunnelAddress}";
+                    ? Localizer.Get("Sync.ServerReadyAwaitingTunnel")
+                    : Localizer.Format("Sync.ServerReadyAtFormat", CurrentTunnelAddress);
 
                 SetStatus(SyncLifecycleStatus.Hosting, connectedAddress);
                 _logger.Info(connectedAddress);
@@ -175,7 +175,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
 
         try
         {
-            SetStatus(SyncLifecycleStatus.StoppingServer, "Deteniendo host y bloqueando nuevos cambios...");
+            SetStatus(SyncLifecycleStatus.StoppingServer, Localizer.Get("Sync.StoppingHostAndBlocking"));
             LastKnownRemoteState = await _stateStore.MarkTransferringAsync(_activeConfig, _activeLeaseId, cancellationToken);
 
             if (_serverManager.IsRunning)
@@ -188,11 +188,11 @@ public sealed class SyncOrchestrator : IAsyncDisposable
                 await _tunnelManager.StopAsync();
             }
 
-            SetStatus(SyncLifecycleStatus.SyncingUp, "Comprimiendo mundo...");
+            SetStatus(SyncLifecycleStatus.SyncingUp, Localizer.Get("Sync.CompressingWorld"));
             var artifact = await _worldManager.CreateSnapshotAsync(_activeConfig, cancellationToken);
 
             var nextVersion = Math.Max(LastKnownRemoteState?.WorldVersion ?? 0, 0) + 1;
-            _logger.Info($"Subiendo snapshot version {nextVersion}...");
+            _logger.Info(Localizer.Format("Sync.UploadingSnapshotVersionFormat", nextVersion));
 
             var upload = await _snapshotStorageProvider.UploadSnapshotAsync(_activeConfig, artifact, nextVersion, cancellationToken);
             LastKnownRemoteState = await _stateStore.PublishSnapshotAsync(_activeConfig, _activeLeaseId, upload, cancellationToken);
@@ -202,21 +202,21 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         }
         finally
         {
-            await ReleaseRuntimeStateAsync();
-            if (stopCompleted)
-            {
-                SetStatus(SyncLifecycleStatus.Idle, "Mundo sincronizado. Host liberado.");
-                _logger.Info("Host liberado y mundo sincronizado correctamente.");
+                await ReleaseRuntimeStateAsync();
+                if (stopCompleted)
+                {
+                SetStatus(SyncLifecycleStatus.Idle, Localizer.Get("Sync.WorldSyncedHostReleased"));
+                _logger.Info(Localizer.Get("Sync.HostReleasedLog"));
+                }
+                _isStopping = false;
             }
-            _isStopping = false;
-        }
     }
 
     private async Task SyncDownIfRequiredAsync(UserConfig config, AppState remoteState, CancellationToken cancellationToken)
     {
         if (remoteState.WorldVersion <= 0 || string.IsNullOrWhiteSpace(remoteState.SnapshotRef))
         {
-            _logger.Info("No existe snapshot remoto previo. Se iniciara un mundo nuevo.");
+            _logger.Info(Localizer.Get("Sync.NoRemoteSnapshot"));
             return;
         }
 
@@ -224,16 +224,16 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         if (localState.WorldVersion == remoteState.WorldVersion &&
             string.Equals(localState.WorldChecksum, remoteState.WorldChecksum, StringComparison.OrdinalIgnoreCase))
         {
-            _logger.Info("El snapshot local ya coincide con la ultima version remota.");
+            _logger.Info(Localizer.Get("Sync.LocalSnapshotUpToDate"));
             return;
         }
 
-        SetStatus(SyncLifecycleStatus.SyncingDown, $"Descargando mundo v{remoteState.WorldVersion}...");
+        SetStatus(SyncLifecycleStatus.SyncingDown, Localizer.Format("Sync.DownloadingWorldVersionFormat", remoteState.WorldVersion));
         var zipPath = await _snapshotStorageProvider.DownloadSnapshotAsync(config, remoteState.SnapshotRef, cancellationToken);
         await _worldManager.ExtractSnapshotAsync(config, zipPath, cancellationToken);
         await _worldManager.MarkLocalStateAsync(remoteState.WorldVersion, remoteState.WorldChecksum, cancellationToken);
 
-        _logger.Info($"Snapshot remoto v{remoteState.WorldVersion} descargado y aplicado.");
+        _logger.Info(Localizer.Format("Sync.RemoteSnapshotAppliedFormat", remoteState.WorldVersion));
     }
 
     private void StartHeartbeatLoop(UserConfig config, string leaseId)
@@ -284,7 +284,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.Warning($"La limpieza del arranque fallido reporto un error: {ex.Message}");
+            _logger.Warning(Localizer.Format("Sync.FailedStartCleanupWarningFormat", ex.Message));
         }
         finally
         {
@@ -296,12 +296,12 @@ public sealed class SyncOrchestrator : IAsyncDisposable
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warning($"No fue posible liberar el lease tras un fallo: {ex.Message}");
+                    _logger.Warning(Localizer.Format("Sync.ReleaseLeaseAfterFailureWarningFormat", ex.Message));
                 }
             }
 
             await ReleaseRuntimeStateAsync();
-            SetStatus(SyncLifecycleStatus.Error, "El inicio como host fallo.");
+            SetStatus(SyncLifecycleStatus.Error, Localizer.Get("Sync.HostStartFailed"));
         }
     }
 
@@ -323,7 +323,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
             return;
         }
 
-        _logger.Warning("El proceso del servidor termino. Iniciando sincronizacion de cierre automatica.");
+        _logger.Warning(Localizer.Get("Sync.ServerProcessEndedAutoSync"));
 
         try
         {
@@ -331,8 +331,8 @@ public sealed class SyncOrchestrator : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.Error("Fallo el cierre automatico luego de que el servidor termino.", ex);
-            SetStatus(SyncLifecycleStatus.Error, "El servidor termino y la sincronizacion automatica fallo.");
+            _logger.Error(Localizer.Get("Sync.AutoCloseFailedAfterServerEnded"), ex);
+            SetStatus(SyncLifecycleStatus.Error, Localizer.Get("Sync.ServerEndedAutoSyncFailed"));
         }
     }
 
@@ -355,7 +355,7 @@ public sealed class SyncOrchestrator : IAsyncDisposable
             }
             catch (Exception ex)
             {
-                _logger.Error("No fue posible detener el host al cerrar la app.", ex);
+                _logger.Error(Localizer.Get("Sync.CannotStopHostOnAppClose"), ex);
             }
         }
 

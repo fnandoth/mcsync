@@ -55,6 +55,7 @@ dotnet run --project .\MCSync.csproj
 
 4. Open **SETTINGS** and fill in at minimum:
    - GitHub owner / repo / branch / token
+   - UI language (**Spanish** or **English**)
    - path to `server.jar`
    - `playit.gg` URL
    - minimum and maximum Java memory

@@ -54,10 +54,11 @@ dotnet run --project .\MCSync.csproj
 ```
 
 4. Abre **CONFIGURACION** y completa como minimo:
-   - GitHub owner / repo / branch / token
-   - ruta de `server.jar`
-   - URL de `playit.gg`
-   - memoria Java minima y maxima
+    - GitHub owner / repo / branch / token
+    - idioma de la UI (**Español** o **English**)
+    - ruta de `server.jar`
+    - URL de `playit.gg`
+    - memoria Java minima y maxima
 5. Guarda configuracion.
 
 ## Uso diario
